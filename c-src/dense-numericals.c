@@ -6,6 +6,9 @@
 // TODO: Separate architecture specific code into separate files and configure
 // Makefile accordingly
 
+#define sleefify_vecf32(base_name) Sleef_##base_name##f8_u10
+#define sleefify_vecf64(base_name) Sleef_##base_name##d4_u10
+
 typedef __m256 vecf32;
 const int SIMD_SINGLE_STRIDE = 8;
 vecf32 static inline vecf32_load(float* ptr){ return _mm256_loadu_ps(ptr); }
@@ -19,6 +22,9 @@ void static inline vecf64_store(double* ptr, vecf64 v){ return _mm256_storeu_pd(
 #elif defined(__aarch64__)
 
 #include<arm_neon.h>
+
+#define sleefify_vecf32(base_name) Sleef_##base_name##f4_u10
+#define sleefify_vecf64(base_name) Sleef_##base_name##d2_u10
 
 typedef float32x4_t vecf32;
 const int SIMD_SINGLE_STRIDE = 4;
@@ -62,7 +68,7 @@ void DN_ssin(const long n,
     float* simd_end = y + (n/SIMD_SINGLE_STRIDE)*SIMD_SINGLE_STRIDE;
     while(y != simd_end){
       va = vecf32_load(x);
-      vb = Sleef_sinf4_u10(va);
+      vb = sleefify_vecf32(sin)(va);
       vecf32_store(y, vb);
       x += SIMD_SINGLE_STRIDE;
       y += SIMD_SINGLE_STRIDE;
@@ -71,7 +77,7 @@ void DN_ssin(const long n,
     float* simd_end = y + (n/SIMD_SINGLE_STRIDE)*SIMD_SINGLE_STRIDE;
     while(y != simd_end){
       va = vecf32_make(x, incx);
-      vb = Sleef_sinf4_u10(va);
+      vb = sleefify_vecf32(sin)(va);
       vecf32_store(y, vb);
       x += SIMD_SINGLE_STRIDE*incx;
       y += SIMD_SINGLE_STRIDE;
@@ -80,7 +86,7 @@ void DN_ssin(const long n,
     float* simd_end = x + (n/SIMD_SINGLE_STRIDE)*SIMD_SINGLE_STRIDE;
     while(x != simd_end){
       va = vecf32_load(x);
-      vb = Sleef_sinf4_u10(va);
+      vb = sleefify_vecf32(sin)(va);
       vecf32_store_multi(vb, y, incy);
       x += SIMD_SINGLE_STRIDE;
       y += SIMD_SINGLE_STRIDE*incy;
@@ -90,7 +96,7 @@ void DN_ssin(const long n,
     const long simd_end = (n/SIMD_SINGLE_STRIDE)*SIMD_SINGLE_STRIDE;
     while(i != simd_end){
       va = vecf32_make(x, incx);
-      vb = Sleef_sinf4_u10(va);
+      vb = sleefify_vecf32(sin)(va);
       vecf32_store_multi(vb, y, incy);
       i += SIMD_SINGLE_STRIDE;
       x += SIMD_SINGLE_STRIDE * incx;
@@ -115,7 +121,7 @@ void DN_dsin(const long n,
     double* simd_end = y + (n/SIMD_DOUBLE_STRIDE)*SIMD_DOUBLE_STRIDE;
     while(y != simd_end){
       va = vecf64_load(x);
-      vb = Sleef_sind2_u10(va);
+      vb = sleefify_vecf64(sin)(va);
       vecf64_store(y, vb);
       x += SIMD_DOUBLE_STRIDE;
       y += SIMD_DOUBLE_STRIDE;
@@ -124,7 +130,7 @@ void DN_dsin(const long n,
     double* simd_end = y + (n/SIMD_DOUBLE_STRIDE)*SIMD_DOUBLE_STRIDE;
     while(y != simd_end){
       va = vecf64_make(x, incx);
-      vb = Sleef_sind2_u10(va);
+      vb = sleefify_vecf64(sin)(va);
       vecf64_store(y, vb);
       x += SIMD_DOUBLE_STRIDE*incx;
       y += SIMD_DOUBLE_STRIDE;
@@ -133,7 +139,7 @@ void DN_dsin(const long n,
     double* simd_end = x + (n/SIMD_DOUBLE_STRIDE)*SIMD_DOUBLE_STRIDE;
     while(x != simd_end){
       va = vecf64_load(x);
-      vb = Sleef_sind2_u10(va);
+      vb = sleefify_vecf64(sin)(va);
       vecf64_store_multi(vb, y, incy);
       x += SIMD_DOUBLE_STRIDE;
       y += SIMD_DOUBLE_STRIDE*incy;
@@ -143,7 +149,7 @@ void DN_dsin(const long n,
     const long simd_end = (n/SIMD_DOUBLE_STRIDE)*SIMD_DOUBLE_STRIDE;
     while(i != simd_end){
       va = vecf64_make(x, incx);
-      vb = Sleef_sind2_u10(va);
+      vb = sleefify_vecf64(sin)(va);
       vecf64_store_multi(vb, y, incy);
       i += SIMD_DOUBLE_STRIDE;
       x += SIMD_DOUBLE_STRIDE * incx;
