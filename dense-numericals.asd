@@ -2,7 +2,7 @@
   :pathname "src/"
   :version "0.1.0"
   :serial t
-  :depends-on ("dense-arrays-plus"
+  :depends-on ("dense-arrays-plus-lite"
                "cl-autowrap"
                "alexandria"
                "iterate"
@@ -14,4 +14,5 @@
   :components ((:file "package")
                (:file "spec")
                (:file "ptr-iterate-but-inner")
-               (:file "functions")))
+               (:file "one-arg-fn")))
+

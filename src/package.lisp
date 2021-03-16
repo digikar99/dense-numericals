@@ -10,13 +10,29 @@
   (:documentation "Depends on foreign-functions")
   (:mix :dense-numericals-lite)
   (:reexport :dense-numericals-lite)
-  (:export sin))
+  (:export sin
+           cos
+           tan
+           asin
+           acos
+           atan
+           sinh
+           cosh
+           tanh
+           asinh
+           acosh
+           atanh
+
+           exp
+           log
+           expt))
 
 (uiop:define-package :dense-numericals.impl
   (:mix :dense-arrays-plus-lite :cl :alexandria)  
   (:import-from :adhoc-polymorphic-functions
                 :define-polymorphic-function
-                :defpolymorph)
+                :defpolymorph
+                :defpolymorph-compiler-macro)
   (:import-from :dense-arrays
                 :lm
                 :array-strides
@@ -42,3 +58,6 @@
       :do (trivial-package-local-nicknames:add-package-local-nickname nick package))
 
 (5am:def-suite :dense-numericals)
+
+(push (cons (find-package :dense-numericals.impl) 'single-float)
+      *element-type-alist*)
