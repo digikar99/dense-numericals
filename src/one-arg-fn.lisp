@@ -14,39 +14,42 @@
   
   `(handler-bind ((style-warning #'muffle-warning))
      
-     (define-polymorphic-function ,name (x &key out))
+     (define-polymorphic-function ,name (x &key out) :overwrite t)
      
-     (defpolymorph ,name ((x (array single-float)) &key ((out (array single-float))
-                                                              (zeros-like x)))
+     (defpolymorph (,name :recursively-safe-p t)
+         ((x (array single-float)) &key ((out (array single-float))
+                                         (zeros-like x)))
          (array single-float)
        (declare (optimize speed))
-       (ptr-iterate-but-inner n ((ptr-x   init-x   ix   x)
-                                 (ptr-out init-out iout out))
+       (ptr-iterate-but-inner 4 n ((ptr-x   ix   x)
+                                 (ptr-out iout out))
                               (,single-float-c-name n
-                                                    ptr-x   init-x   ix
-                                                    ptr-out init-out iout))
+                                                    ptr-x   ix
+                                                    ptr-out iout))
        out)
 
-     (defpolymorph ,name ((x (array double-float)) &key ((out (array double-float))
-                                                              (zeros-like x)))
+     (defpolymorph (,name :recursively-safe-p t)
+         ((x (array double-float)) &key ((out (array double-float))
+                                         (zeros-like x)))
          (array double-float)
        (declare (optimize speed))
-       (ptr-iterate-but-inner n ((ptr-x   init-x   ix   x)
-                                 (ptr-out init-out iout out))
+       (ptr-iterate-but-inner 8 n ((ptr-x   ix   x)
+                                 (ptr-out iout out))
                               (,double-float-c-name n
-                                                    ptr-x   init-x   ix
-                                                    ptr-out init-out iout))
+                                                    ptr-x   ix
+                                                    ptr-out iout))
        out)
 
      ;; It's SBCL who does not emit compiler notes :/
-     (defpolymorph ,name ((x number) &key ((out null) nil outp))
+     (defpolymorph (,name :recursively-safe-p t) ((x number) &key ((out null) nil outp))
          number
        (declare (ignorable out outp)
                 (optimize speed))
        (,(find-symbol (symbol-name name) :cl) x))
 
      ;; TODO: Implement a compiler-macro function for this
-     (defpolymorph ,name ((x list) &key ((out null) nil outp)) array
+     ;; TODO: Rethink over default floating value
+     (defpolymorph (,name :recursively-safe-p t) ((x list) &key ((out null) nil outp)) array
        (declare (ignorable out outp)
                 (optimize speed))
        (,name (the (array ,(cdr (assoc (find-package :dense-numericals.impl)
@@ -116,3 +119,4 @@
 (define-one-arg-functions dn:atanh (c:dn-satanh 2f-7) (c:dn-datanh 1d-15))
 
 (define-one-arg-functions dn:exp (c:dn-sexp 2f-7) (c:dn-dexp 1d-15))
+(define-one-arg-functions dn:sqrt (c:dn-ssqrt 2f-7) (c:dn-dsqrt 2f-7))

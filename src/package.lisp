@@ -25,7 +25,9 @@
 
            exp
            log
-           expt))
+           expt
+
+           sqrt))
 
 (uiop:define-package :dense-numericals.impl
   (:mix :dense-arrays-plus-lite :cl :alexandria)  

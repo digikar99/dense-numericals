@@ -1,15 +1,21 @@
 (in-package :dense-numericals.impl)
 
+(declaim (inline ptr))
+(declaim (ftype (function * cffi-sys::foreign-pointer) ptr))
 (defun ptr (array)
-  (static-vectors:static-vector-pointer (array-displaced-to array)))
+  (declare (optimize speed))
+  (cffi:make-pointer (the fixnum
+                          (+ (the fixnum
+                                  (static-vectors::static-vector-address
+                                   (array-displaced-to array)))
+                             static-vectors::+array-header-size+))))
 
-(defmacro ptr-iterate-but-inner (n-var bindings expression)
-  "Each bindings is of the form (PTR-VAR TOTAL-INITIAL-OFFSET-VAR INNER-STRIDE-VAR ARRAY-EXPR)."
+(defmacro ptr-iterate-but-inner (elt-size n-var bindings expression)
+  "Each bindings is of the form (PTR-VAR INNER-STRIDE-VAR ARRAY-EXPR)."
 
-  (let* ((pointers      (mapcar #'first bindings))
-         (array-exprs   (mapcar #'fourth bindings))
-         (total-offsets (mapcar #'second bindings))
-         (inner-strides (mapcar #'third bindings))
+  (let* ((pointers      (mapcar #'first  bindings))
+         (array-exprs   (mapcar #'third  bindings))
+         (inner-strides (mapcar #'second bindings))
          (num-arrays    (length bindings)))
 
     (let ((array-vars   (make-gensym-list num-arrays "ARRAY"))
@@ -26,10 +32,8 @@
                ,@(mapcar (lm strides var `(,strides (array-strides ,var)))
                          strides array-vars)
                ,@(mapcar (lm offsets var `(,offsets (array-offsets ,var)))
-                         offsets array-vars)
-               ,@(mapcar (lm total-offset `(,total-offset 0))
-                         total-offsets))
-           (declare (type int-index ,@total-offsets))
+                         offsets array-vars))
+           (declare (type cffi-sys:foreign-pointer ,@pointers))
 
            (labels ((nest-loop (,dimensions ,@strides ,@offsets)
                       (let ((,n-var   (first ,dimensions))
@@ -42,28 +46,38 @@
                         ;; (mapc #'print (list ,dimensions ,@pointers))
                         (if (null (rest ,dimensions))
                             (progn
-                              ,@(mapcar (lm total-offset o `(incf ,total-offset ,o))
-                                        total-offsets os)
+                              ,@(mapcar (lm ptr o `(cffi:incf-pointer
+                                                       ,ptr (the-int-index (* ,elt-size ,o))))
+                                        pointers os)
                               ,expression
-                              ,@(mapcar (lm total-offset o `(decf ,total-offset ,o))
-                                        total-offsets os))
+                              ,@(mapcar (lm ptr o `(cffi:incf-pointer
+                                                       ,ptr (the-int-index
+                                                                 (* ,elt-size
+                                                                    (- ,o)))))
+                                        pointers os)
+                              nil)
                             (loop :initially
-                                  ,@(mapcar (lm total-offset o `(incf ,total-offset ,o))
-                                            total-offsets os)
+                                  ,@(mapcar (lm ptr o `(cffi:incf-pointer
+                                                           ,ptr (the-int-index (* ,elt-size ,o))))
+                                            pointers os)
                                   :repeat ,n-var
                                   :do (nest-loop
                                        (rest ,dimensions)
                                        ,@(mapcar (lm strides `(rest ,strides)) strides)
                                        ,@(mapcar (lm offsets `(rest ,offsets)) offsets))
-                                  ,@(mapcar (lm total-offset ss `(incf ,total-offset ,ss))
-                                            total-offsets ss)
+                                  ,@(mapcar (lm ptr s `(cffi:incf-pointer
+                                                           ,ptr (the-int-index (* ,elt-size ,s))))
+                                            pointers ss)
                                   :finally
-                                  ,@(mapcar (lm total-offset o s
-                                                `(decf ,total-offset
-                                                     (the int-index
-                                                          (+ ,o
+                                  ,@(mapcar (lm ptr o s
+                                                `(cffi:incf-pointer
+                                                     ,ptr
+                                                     (the-int-index
+                                                          (* ,elt-size
                                                              (the-int-index
-                                                              (* ,n-var ,s))))))
-                                            total-offsets os ss))))))
+                                                                  (- (+ ,o
+                                                                        (the-int-index
+                                                                         (* ,n-var ,s)))))))))
+                                            pointers os ss))))))
              (nest-loop (narray-dimensions ,(first array-vars))
                         ,@strides ,@offsets)))))))
