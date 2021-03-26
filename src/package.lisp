@@ -44,19 +44,27 @@
                 :int-index
                 :the-int-index))
 
-(eval-when (:compile-toplevel :load-toplevel :execute)
-  (unless (find-package :dense-numericals.c)
-    (defpackage :dense-numericals.c
-      (:use)
-      (:export :*src-dir*))))
+(in-package :dense-numericals.impl)
 
-(in-package :dense-numericals.c)
-(cl:defvar *src-dir* (asdf:component-pathname (asdf:find-system "dense-numericals")))
+(defvar *src-dir* (asdf:component-pathname (asdf:find-system "dense-numericals")))
 
-(cl:in-package :dense-numericals.impl)
+(unless (find-package :dense-numericals.c)
+  (defpackage :dense-numericals.c
+    (:use)
+    (:import-from :dense-numericals.impl
+                  :*src-dir*)
+    (:export :*src-dir*)))
 
-(loop :for (nick package) :in '((:dn :dense-numericals)
-                                  (:c  :dense-numericals.c))
+(unless (find-package :dense-numericals.linalg.c)
+  (defpackage :dense-numericals.linalg.c
+    (:use)
+    (:import-from :dense-numericals.impl
+                  :*src-dir*)
+    (:export :*src-dir*)))
+
+(loop :for (nick package) :in '((:dn       :dense-numericals)
+                                (:c        :dense-numericals.c)
+                                (:linalg.c :dense-numericals.linalg.c))
       :do (trivial-package-local-nicknames:add-package-local-nickname nick package))
 
 (5am:def-suite :dense-numericals)

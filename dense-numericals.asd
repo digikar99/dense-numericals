@@ -13,6 +13,7 @@
                "trivial-package-local-nicknames")
   :components ((:file "package")
                (:file "spec")
+               (:file "linalg")
                (:file "ptr-iterate-but-inner")
                (:file "one-arg-fn")))
 

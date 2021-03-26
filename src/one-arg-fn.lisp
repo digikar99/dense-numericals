@@ -40,6 +40,8 @@
                                                     ptr-out iout))
        out)
 
+     ;; TODO: Implement these for complex-floats
+
      ;; It's SBCL who does not emit compiler notes :/
      (defpolymorph (,name :recursively-safe-p t) ((x number) &key ((out null) nil outp))
          number
