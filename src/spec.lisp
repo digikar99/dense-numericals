@@ -8,9 +8,10 @@
 
 ;; TODO: Delete the below code once declaim-inline option is added
 
-(do-symbols (s (find-package :dense-numericals.c))
-  (when (fboundp s)
-    (proclaim `(inline ,s))))
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (do-symbols (s (find-package :dense-numericals.c))
+    (when (fboundp s)
+      (proclaim `(inline ,s)))))
 
 (autowrap:c-include (merge-pathnames #P"../c-src/dense-numericals.h" *src-dir*)
                     :spec-path (merge-pathnames #P"specs/" *src-dir*)
