@@ -10,6 +10,7 @@
                "cffi"
                "fiveam"
                "adhoc-polymorphic-functions"
+               "dense-arrays+static-vectors"
                "trivial-package-local-nicknames")
   :components ((:file "package")
                (:file "spec")
