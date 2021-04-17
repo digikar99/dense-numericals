@@ -16,5 +16,6 @@
                (:file "spec")
                (:file "linalg")
                (:file "ptr-iterate-but-inner")
+               (:file "test")
                (:file "one-arg-fn")))
 

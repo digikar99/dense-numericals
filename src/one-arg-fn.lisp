@@ -12,13 +12,12 @@
 (defmacro define-one-arg-functions (name single-float-c-name double-float-c-name)
 
   ;; TODO: Use ARRAY or STATIC-ARRAY
-  `(handler-bind ((style-warning #'muffle-warning))
+  `(progn
 
      (defpolymorph (,name :inline t)
          ((x (array single-float)) &key ((out (array single-float))
                                          (zeros-like x)))
-         (array single-float)
-       (declare (optimize speed))
+         (values (array single-float) &optional)
        (ptr-iterate-but-inner 4 n ((ptr-x   ix   x)
                                    (ptr-out iout out))
                               (,single-float-c-name n
@@ -31,8 +30,7 @@
      (defpolymorph (,name :inline t)
          ((x (simple-array single-float)) &key ((out (simple-array single-float))
                                                 (zeros-like x)))
-         (simple-array single-float)
-       (declare (optimize speed))
+         (values (simple-array single-float) &optional)
        (let ((ptr-x   (ptr x))
              (ptr-out (ptr out))
              (n       (array-total-size x)))
@@ -44,8 +42,7 @@
      (defpolymorph (,name :inline t)
          ((x (array double-float)) &key ((out (array double-float))
                                          (zeros-like x)))
-         (array double-float)
-       (declare (optimize speed))
+         (values (array double-float) &optional)
        (ptr-iterate-but-inner 8 n ((ptr-x   ix   x)
                                    (ptr-out iout out))
                               (,double-float-c-name n
@@ -56,8 +53,7 @@
      (defpolymorph (,name :inline t)
          ((x (simple-array double-float)) &key ((out (simple-array double-float))
                                                 (zeros-like x)))
-         (simple-array double-float)
-       (declare (optimize speed))
+         (values (simple-array double-float) &optional)
        (let ((ptr-x   (ptr x))
              (ptr-out (ptr out))
              (n       (array-total-size x)))
@@ -71,27 +67,32 @@
      ;; It's SBCL who does not emit compiler notes :/
      (defpolymorph (,name :inline t) ((x number) &key ((out null) nil outp))
          number
-       (declare (ignorable out outp)
-                (optimize speed))
+       (declare (ignorable out outp))
        (,(find-symbol (symbol-name name) :cl) x))
 
      ;; TODO: Implement a compiler-macro function for this
      ;; TODO: Rethink over default floating value
-     (defpolymorph (,name :inline t) ((x list) &key ((out null) nil outp)) array
-       (declare (ignorable out outp)
-                (optimize speed))
+     (defpolymorph (,name :inline t) ((x list) &key ((out null) nil outp))
+         (values array &optional)
+       (declare (ignorable out outp))
        (,name (the (array ,(cdr (assoc (find-package :dense-numericals.impl)
                                        *element-type-alist*)))
                    (asarray x))))))
 
-(macrolet ((def (name (single-float-c-name single-float-error)
-                      (double-float-c-name double-float-error))
+(macrolet ((def (name
+                 (single-float-c-name single-float-error
+                  &optional (sf-min 0.0f0) (sf-max 1.0f0))
+                 (double-float-c-name double-float-error
+                  &optional (df-min 0.0d0) (df-max 1.0d0)))
+             (eval `(define-polymorphic-function ,name (x &key out) :overwrite t))
              `(progn
-                (define-polymorphic-function ,name (x &key out) :overwrite t)
+                (define-polymorphic-function ,name (x &key out))
                 (define-one-arg-functions ,name ,single-float-c-name ,double-float-c-name)
                 ;; If someone is worried about the compilation time; then know that that comes
                 ;; from this def-test form :/
-                (define-numericals-test ,name array ,single-float-error ,double-float-error))))
+                (define-numericals-test ,name array
+                    (,single-float-error ,sf-min ,sf-max)
+                    (,double-float-error ,df-min ,df-max)))))
   (def dn:sin (c:dn-ssin 2f-7) (c:dn-dsin 1d-15))
   (def dn:cos (c:dn-scos 2f-7) (c:dn-dcos 1d-15))
   (def dn:tan (c:dn-stan 2f-7) (c:dn-dtan 1d-15))
@@ -105,7 +106,7 @@
   (def dn:tanh (c:dn-stanh 2f-7) (c:dn-dtanh 1d-15))
 
   (def dn:asinh (c:dn-sasinh 2f-7) (c:dn-dasinh 1d-15))
-  (def dn:acosh (c:dn-sacosh 2f-7) (c:dn-dacosh 1d-15))
+  (def dn:acosh (c:dn-sacosh 2f-7 1.0f0 2.0f0) (c:dn-dacosh 1d-15 1.0d0 2.0d0))
   (def dn:atanh (c:dn-satanh 2f-7) (c:dn-datanh 1d-15))
 
   (def dn:exp (c:dn-sexp 2f-7) (c:dn-dexp 1d-15))
@@ -113,5 +114,5 @@
 
 ;; Handle atan case specially
 (define-polymorphic-function dn:atan (x &rest args) :overwrite t)
-(define-one-arg-functions dn:atan (c:dn-satan 2f-7) (c:dn-datan 1d-15))
+(define-one-arg-functions dn:atan c:dn-satan c:dn-datan)
 (define-numericals-test dn:atan array 2f-7 1d-15)
