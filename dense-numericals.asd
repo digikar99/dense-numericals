@@ -17,5 +17,10 @@
                (:file "linalg")
                (:file "ptr-iterate-but-inner")
                (:file "test")
-               (:file "one-arg-fn")))
+               (:file "one-arg-fn"))
+  :perform (test-op (o c)
+             (declare (ignore o c))
+             ;; Or should we use STATIC?
+             (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-BACKEND* :CL))
+                                        (5AM:RUN 'DENSE-NUMERICALS.IMPL::ARRAY))"))))
 

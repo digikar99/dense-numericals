@@ -7,16 +7,30 @@
 
 (macrolet ((def (single-float-fn-name double-float-fn-name cl-name)
              `(progn
-                (defkernel ,single-float-fn-name (void ((n int) (a float*) (out float*)))
-                  (let ((i (+ (* block-dim-x block-idx-x) thread-idx-x)))
-                    (when (< i n)
-                      (set (aref out i)
-                           (,cl-name (aref a i))))))
-                (defkernel ,double-float-fn-name (void ((n int) (a double*) (out double*)))
-                  (let ((i (+ (* block-dim-x block-idx-x) thread-idx-x)))
-                    (when (< i n)
-                      (set (aref out i)
-                           (,cl-name (aref a i)))))))))
+                (defkernel ,single-float-fn-name (void ((n-global int)
+                                                        (n-local  int)
+                                                        (a float*)   (inc-a int)
+                                                        (out float*) (inc-o int)))
+                  (do ((i-start (+ (* block-dim-x block-idx-x)
+                                   thread-idx-x)
+                                (+ i-start (* block-dim-x grid-dim-x))))
+                      ((>= i-start n-global))
+                    (do ((i 0 (+ i 1)))
+                        ((>= i n-local))
+                      (set (aref out (+ i-start (* i inc-a)))
+                           (,cl-name (aref a (+ i-start (* i inc-o))))))))
+                (defkernel ,double-float-fn-name (void ((n-global int)
+                                                        (n-local  int)
+                                                        (a double*)   (inc-a int)
+                                                        (out double*) (inc-o int)))
+                  (do ((i-start (+ (* block-dim-x block-idx-x)
+                                   thread-idx-x)
+                                (+ i-start (* block-dim-x grid-dim-x))))
+                      ((>= i-start n-global))
+                    (do ((i 0 (+ i 1)))
+                        ((>= i n-local))
+                      (set (aref out (+ i-start (* i inc-a)))
+                           (,cl-name (aref a (+ i-start (* i inc-o)))))))))))
   ;; Is there a limit to the number of blocks?
   ;; Should we attempt a grid-stride loop?
 
@@ -31,7 +45,10 @@
   (def stanh  dtanh  tanh)
   (def sasinh dasinh asinh)
   (def sacosh dacosh acosh)
-  (def satanh datanh atanh))
+  (def satanh datanh atanh)
+
+  (def ssqrt  dsqrt  sqrt)
+  (def sexp   dexp   exp))
 
 (defkernel satan2
     (void ((n int) (a float*) (b float*) (out float*)))
@@ -39,7 +56,7 @@
     (when (< i n) (set (aref out i) (atan (aref a i) (aref b i))))))
 
 (defkernel datan2
-    (void ((n int) (a double*) (b double*)(out double*)))
+    (void ((n int) (a double*) (b double*) (out double*)))
   (let ((i (+ (* block-dim-x block-idx-x) thread-idx-x)))
     (when (< i n) (set (aref out i) (atan (aref a i) (aref b i))))))
 
