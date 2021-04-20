@@ -27,13 +27,18 @@
            log
            expt
 
-           sqrt))
+           sqrt
+
+           two-arg-+))
 
 (uiop:define-package :dense-numericals.impl
   (:mix :dense-arrays-plus-lite :cl :alexandria)  
   (:import-from :adhoc-polymorphic-functions
                 :define-polymorphic-function
                 :defpolymorph
+                :env
+                :optim-speed
+                :optim-debug
                 :defpolymorph-compiler-macro)
   (:import-from :dense-arrays
                 :lm
