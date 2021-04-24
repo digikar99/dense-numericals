@@ -68,7 +68,7 @@
                   ,single-float-cuda-name ,double-float-cuda-name)
                 ;; If someone is worried about the compilation time; then know that that comes
                 ;; from this def-test form :/
-                (define-numericals-test ,name cuda-array
+                (define-numericals-one-arg-test ,name cuda-array
                     (,single-float-error ,sf-min ,sf-max)
                     (,double-float-error ,df-min ,df-max)))))
   (def dn:sin (dc::ssin 2f-7) (dc::dsin 1d-15))

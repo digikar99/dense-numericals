@@ -100,7 +100,7 @@
                 (define-one-arg-functions ,name ,single-float-c-name ,double-float-c-name)
                 ;; If someone is worried about the compilation time; then know that that comes
                 ;; from this def-test form :/
-                (define-numericals-test ,name array
+                (define-numericals-one-arg-test ,name array
                     (,single-float-error ,sf-min ,sf-max)
                     (,double-float-error ,df-min ,df-max)))))
   (def dn:sin (c:dn-ssin 2f-7) (c:dn-dsin 1d-15))
@@ -124,4 +124,4 @@
 ;; Handle atan case specially
 (define-polymorphic-function dn:atan (x &rest args) :overwrite t)
 (define-one-arg-functions dn:atan c:dn-satan c:dn-datan)
-(define-numericals-test dn:atan array (2f-7) (1d-15))
+(define-numericals-one-arg-test dn:atan array (2f-7) (1d-15))

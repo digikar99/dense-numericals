@@ -1,10 +1,11 @@
 (in-package :dense-numericals.impl)
 
-(defmacro define-numericals-test (name array-type
-                                  (single-float-error
-                                   &optional (single-float-min 0.0f0) (single-float-max 1.0f0))
-                                  (double-float-error
-                                   &optional (double-float-min 0.0d0) (double-float-max 1.0d0)))
+(defmacro define-numericals-one-arg-test
+    (name array-type
+     (single-float-error
+      &optional (single-float-min 0.0f0) (single-float-max 1.0f0))
+     (double-float-error
+      &optional (double-float-min 0.0d0) (double-float-max 1.0d0)))
 
   (let ((cl-name (find-symbol (symbol-name name) :cl)))
 
