@@ -17,7 +17,8 @@
                (:file "linalg")
                (:file "ptr-iterate-but-inner")
                (:file "test")
-               (:file "one-arg-fn"))
+               (:file "one-arg-fn")
+               (:file "two-arg-fn"))
   :perform (test-op (o c)
              (declare (ignore o c))
              ;; Or should we use STATIC?

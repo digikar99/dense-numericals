@@ -50,19 +50,56 @@
   (def ssqrt  dsqrt  sqrt)
   (def sexp   dexp   exp))
 
-(defkernel satan2
-    (void ((n int) (a float*) (b float*) (out float*)))
-  (let ((i (+ (* block-dim-x block-idx-x) thread-idx-x)))
-    (when (< i n) (set (aref out i) (atan (aref a i) (aref b i))))))
 
-(defkernel datan2
-    (void ((n int) (a double*) (b double*) (out double*)))
-  (let ((i (+ (* block-dim-x block-idx-x) thread-idx-x)))
-    (when (< i n) (set (aref out i) (atan (aref a i) (aref b i))))))
 
-;; (defkernel our-add-kernel (void ((a float*) (b float*) (c float*) (n int)))
-;;   (let ((i (+ (* block-dim-x block-idx-x) thread-idx-x)))
-;;     (when (< i n)
-;;       (set (aref c i)
-;;            (+ (aref a i) (aref b i))))))
+(macrolet ((def (cl-name
+                 (single-float-fn-name single-float-return-type)
+                 (double-float-fn-name double-float-return-type))
+             `(progn
+                (defkernel ,single-float-fn-name (void ((n-global int)
+                                                        (n-local  int)
+                                                        (a float*) (inc-a int)
+                                                        (b float*) (inc-b int)
+                                                        (o ,single-float-return-type)
+                                                        (inc-o int)))
+                  (do ((i-start (+ (* block-dim-x block-idx-x)
+                                   thread-idx-x)
+                                (+ i-start (* block-dim-x grid-dim-x))))
+                      ((>= i-start n-global))
+                    (do ((i 0 (+ i 1)))
+                        ((>= i n-local))
+                      (set (aref o (+ i-start (* i inc-o)))
+                           (,cl-name (aref a (+ i-start (* i inc-a)))
+                                     (aref b (+ i-start (* i inc-b))))))))
+                (defkernel ,double-float-fn-name (void ((n-global int)
+                                                        (n-local  int)
+                                                        (a double*) (inc-a int)
+                                                        (b double*) (inc-b int)
+                                                        (o ,double-float-return-type)
+                                                        (inc-o int)))
+                  (do ((i-start (+ (* block-dim-x block-idx-x)
+                                   thread-idx-x)
+                                (+ i-start (* block-dim-x grid-dim-x))))
+                      ((>= i-start n-global))
+                    (do ((i 0 (+ i 1)))
+                        ((>= i n-local))
+                      (set (aref o (+ i-start (* i inc-o)))
+                           (,cl-name (aref a (+ i-start (* i inc-a)))
+                                     (aref b (+ i-start (* i inc-b)))))))))))
+  ;; Is there a limit to the number of blocks?
+  ;; Should we attempt a grid-stride loop?
+
+  (def atan (satan2 float*) (datan2 double*))
+
+  (def + (s-add      float*) (d-add      double*))
+  (def - (s-subtract float*) (d-subtract double*))
+  (def / (s-divide   float*) (d-divide   double*))
+  (def * (s-multiply float*) (d-multiply double*))
+
+  (def <  (s-less-p          bool*) (d-less-p          bool*))
+  (def <= (s-less-equal-p    bool*) (d-less-equal-p    bool*))
+  (def =  (s-equal-p         bool*) (d-equal-p         bool*))
+  (def >  (s-greater-p       bool*) (d-greater-p       bool*))
+  (def >= (s-greater-equal-p bool*) (d-greater-equal-p bool*)))
+
 

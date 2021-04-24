@@ -10,29 +10,49 @@
   (:documentation "Depends on foreign-functions")
   (:mix :dense-numericals-lite)
   (:reexport :dense-numericals-lite)
-  (:export sin
-           cos
-           tan
-           asin
-           acos
-           atan
-           sinh
-           cosh
-           tanh
-           asinh
-           acosh
-           atanh
+  (:export #:sin
+           #:cos
+           #:tan
+           #:asin
+           #:acos
+           #:atan
+           #:sinh
+           #:cosh
+           #:tanh
+           #:asinh
+           #:acosh
+           #:atanh
 
-           exp
-           log
-           expt
+           #:exp
+           #:log
+           #:expt
 
-           sqrt
+           #:sqrt
 
-           two-arg-+))
+           #:+
+           #:two-arg-+
+           #:-
+           #:two-arg--
+           #:/
+           #:two-arg-/
+           #:-
+           #:two-arg-*
+
+           #:<
+           #:two-arg-<
+           #:<=
+           #:two-arg-<=
+           #:=
+           #:two-arg-=
+           #:/=
+           #:two-arg-/=
+           #:>
+           #:two-arg->
+           #:>=
+           #:two-arg->=))
 
 (uiop:define-package :dense-numericals.impl
-  (:mix :dense-arrays-plus-lite :cl :alexandria)  
+  (:mix :dense-arrays-plus-lite :cl :alexandria)
   (:import-from :adhoc-polymorphic-functions
                 :define-polymorphic-function
                 :defpolymorph
