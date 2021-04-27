@@ -31,12 +31,14 @@
 
            #:+
            #:two-arg-+
+           #:*
+           #:two-arg-*
            #:-
+           #:one-arg--
            #:two-arg--
            #:/
+           #:one-arg-/
            #:two-arg-/
-           #:-
-           #:two-arg-*
 
            #:<
            #:two-arg-<
@@ -61,13 +63,19 @@
                 :optim-debug
                 :defpolymorph-compiler-macro)
   (:import-from :dense-arrays
-                :lm
-                :array-strides
-                :array-offsets
-                :size
-                :the-size
-                :int-index
-                :the-int-index))
+                #:lm
+                #:array-strides
+                #:array-offsets
+                #:size
+                #:the-size
+                #:int-index
+                #:the-int-index
+                #:broadcast-arrays
+                #:broadcast-compatible-p)
+  (:import-from :dense-arrays-plus-lite
+                #:split-at-keywords
+                #:define-splice-list-fn
+                #:dimensions))
 
 (in-package :dense-numericals.impl)
 

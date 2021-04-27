@@ -125,3 +125,13 @@
 (define-polymorphic-function dn:atan (x &rest args) :overwrite t)
 (define-one-arg-functions dn:atan c:dn-satan c:dn-datan)
 (define-numericals-one-arg-test dn:atan array (2f-7) (1d-15))
+
+
+(macrolet ((def (name op)
+             `(progn
+                (define-polymorphic-function ,name (x &key out) :overwrite t)
+                (defpolymorph ,name ((x number) &key ((out null))) number
+                  (declare (ignore out))
+                  (,op x)))))
+  (def dn:one-arg-- cl:-)
+  (def dn:one-arg-/ cl:/))
