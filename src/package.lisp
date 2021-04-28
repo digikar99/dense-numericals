@@ -10,39 +10,72 @@
   (:documentation "Depends on foreign-functions")
   (:mix :dense-numericals-lite)
   (:reexport :dense-numericals-lite)
-  (:export sin
-           cos
-           tan
-           asin
-           acos
-           atan
-           sinh
-           cosh
-           tanh
-           asinh
-           acosh
-           atanh
+  (:export #:sin
+           #:cos
+           #:tan
+           #:asin
+           #:acos
+           #:atan
+           #:sinh
+           #:cosh
+           #:tanh
+           #:asinh
+           #:acosh
+           #:atanh
 
-           exp
-           log
-           expt
+           #:exp
+           #:log
+           #:expt
 
-           sqrt))
+           #:sqrt
+
+           #:+
+           #:two-arg-+
+           #:*
+           #:two-arg-*
+           #:-
+           #:one-arg--
+           #:two-arg--
+           #:/
+           #:one-arg-/
+           #:two-arg-/
+
+           #:<
+           #:two-arg-<
+           #:<=
+           #:two-arg-<=
+           #:=
+           #:two-arg-=
+           #:/=
+           #:two-arg-/=
+           #:>
+           #:two-arg->
+           #:>=
+           #:two-arg->=))
 
 (uiop:define-package :dense-numericals.impl
-  (:mix :dense-arrays-plus-lite :cl :alexandria)  
+  (:mix :dense-arrays-plus-lite :cl :alexandria)
   (:import-from :adhoc-polymorphic-functions
                 :define-polymorphic-function
                 :defpolymorph
+                :env
+                :optim-speed
+                :optim-debug
                 :defpolymorph-compiler-macro)
   (:import-from :dense-arrays
-                :lm
-                :array-strides
-                :array-offsets
-                :size
-                :the-size
-                :int-index
-                :the-int-index))
+                #:lm
+                #:array-strides
+                #:array-offsets
+                #:size
+                #:the-size
+                #:int-index
+                #:the-int-index
+                #:broadcast-arrays
+                #:broadcast-compatible-p)
+  (:import-from :dense-arrays-plus-lite
+                #:split-at-keywords
+                #:define-splice-list-fn
+                #:dimensions))
 
 (in-package :dense-numericals.impl)
 
