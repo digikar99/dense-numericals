@@ -2,7 +2,7 @@
 
 
 (cffi:load-foreign-library (cl:merge-pathnames #P"../c-src/libdense-numericals.so"
-                                               c:*src-dir*))
+                                               *src-dir*))
 
 (5am:def-suite* array :in :dense-numericals)
 

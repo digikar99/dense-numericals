@@ -11,9 +11,9 @@
                "adhoc-polymorphic-functions"
                "dense-arrays+static-vectors"
                "trivial-package-local-nicknames")
-  :components ((:file "package")
-               (:file "spec"                  :depends-on ("package"))
-               (:file "linalg"                :depends-on ("package"))
+  :components ((:file "spec")
+               (:file "linalg")
+               (:file "package"               :depends-on ("spec" "linalg"))
                (:file "ptr-iterate-but-inner" :depends-on ("package"))
                (:file "test"                  :depends-on ("package"))
                (:file "one-arg-fn"            :depends-on ("spec"

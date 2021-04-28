@@ -1,39 +1,38 @@
 
-#define one_arg_fn(name)                                                \
-  void DN_s##name##(const long n,                                       \
-                    float* x, const long ox, const long incx,           \
-                    float* out, const long o_out, const long inc_out);  \
-  void DN_d##name##(const long n,                                       \
-                    double* x, const long ox, const long incx,          \
-                    double* out, const long o_out, const long inc_out);
+#define one_arg_fn(name)                                \
+  void DN_s##name##(const long n,                       \
+                    float* x, const long incx,          \
+                    float* out, const long inc_out);    \
+  void DN_d##name##(const long n,                       \
+                    double* x, const long incx,         \
+                    double* out, const long inc_out);
 
-#define one_arg_fn_int(name)                                            \
-  void DN_s##name##(const long n,                                       \
-                    float* x, const long ox, const long incx,           \
-                    long* out, const long o_out, const long inc_out);   \
-  void DN_d##name##(const long n,                                       \
-                    double* x, const long ox, const long incx,          \
-                    long* out, const long o_out, const long inc_out);
+#define one_arg_fn_int(name)                        \
+  void DN_s##name##(const long n,                   \
+                    float* x, const long incx,      \
+                    long* out, const long inc_out); \
+  void DN_d##name##(const long n,                   \
+                    double* x, const long incx,     \
+                    long* out, const long inc_out);
 
 
-#define two_arg_fn(name)                                                \
-  void DN_s##name##(const long n,                                       \
-                    float* x, const long ox, const long incx,           \
-                    float* y, const long oy, const long incy,           \
-                    float* out, const long o_out, const long inc_out);   \
-  void DN_d##name##(const long n,                                       \
-                    double* x, const long ox, const long incx,          \
-                    double* y, const long oy, const long incy,          \
-                    double* out, const long o_out, const long inc_out);
-
+#define two_arg_fn(name)                                \
+  void DN_s##name##(const long n,                       \
+                    float* x, const long incx,          \
+                    float* y, const long incy,          \
+                    float* out, const long inc_out);    \
+  void DN_d##name##(const long n,                       \
+                    double* x, const long incx,         \
+                    double* y, const long incy,         \
+                    double* out, const long inc_out);
 
 /* Example expansion of one_arg_fn(sin):
  * void DN_ssin(const long n,
- *              float* x, const long ox, const long incx,
- *              float* out, const long o_out, const long inc_out);
+ *              float* x, const long incx,
+ *              float* out, const long inc_out);
  * void DN_dsin(const long n,
- *              double* x, const long ox, const long incx,
- *              double* out, const long o_out, const long inc_out);
+ *              double* x, const long incx,
+ *              double* out, const long inc_out);
  */
 
 

@@ -79,26 +79,12 @@
 
 (in-package :dense-numericals.impl)
 
-(defvar *src-dir* (asdf:component-pathname (asdf:find-system "dense-numericals")))
-
-(unless (find-package :dense-numericals.c)
-  (defpackage :dense-numericals.c
-    (:use)
-    (:import-from :dense-numericals.impl
-                  :*src-dir*)
-    (:export :*src-dir*)))
-
-(unless (find-package :dense-numericals.linalg.c)
-  (defpackage :dense-numericals.linalg.c
-    (:use)
-    (:import-from :dense-numericals.impl
-                  :*src-dir*)
-    (:export :*src-dir*)))
-
 (loop :for (nick package) :in '((:dn       :dense-numericals)
                                 (:c        :dense-numericals.c)
                                 (:linalg.c :dense-numericals.linalg.c))
       :do (trivial-package-local-nicknames:add-package-local-nickname nick package))
+
+(defvar *src-dir* (asdf:component-pathname (asdf:find-system "dense-numericals")))
 
 (5am:def-suite :dense-numericals)
 
