@@ -2,12 +2,15 @@
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (unless (find-package :dense-numericals.c)
     (defpackage :dense-numericals.c
-      (:use))
+      (:use))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
   (defvar dense-numericals.c::*src-dir*
-    (asdf:component-pathname (asdf:find-system "dense-numericals")))))
+    (asdf:component-pathname (asdf:find-system "dense-numericals"))))
 
 ;; TODO: Avoid hardcoding the path
-(autowrap:c-include (merge-pathnames #P"../c-src/dense-numericals.h" dense-numericals.c::*src-dir*)
+(autowrap:c-include (merge-pathnames #P"../c-src/dense-numericals.h"
+                                     dense-numericals.c::*src-dir*)
                     ;; TODO: Is there an "inline" option?
                     :spec-path
                     (merge-pathnames #P"specs/" dense-numericals.c::*src-dir*)
@@ -20,7 +23,8 @@
     (when (fboundp s)
       (proclaim `(inline ,s)))))
 
-(autowrap:c-include (cl:merge-pathnames #P"../c-src/dense-numericals.h" dense-numericals.c::*src-dir*)
+(autowrap:c-include (cl:merge-pathnames #P"../c-src/dense-numericals.h"
+                                        dense-numericals.c::*src-dir*)
                     :spec-path
                     (merge-pathnames #P"specs/" dense-numericals.c::*src-dir*)
                     :function-package :dense-numericals.c)
