@@ -9,24 +9,6 @@
 ;; Basic Concept:
 ;; (c:dn-ssin (array-total-size x) (ptr x) 1 (ptr out) 1)
 
-(defun one-arg-fn/non-simple-array (elt-size c-fn x &key out)
-  (ptr-iterate-but-inner elt-size n ((ptr-x   ix   x)
-                                     (ptr-out iout out))
-                         (funcall c-fn n ptr-x ix ptr-out iout))
-  out)
-
-(define-compiler-macro one-arg-fn/non-simple-array
-    (&whole form elt-size c-fn x &key out &environment env)
-  (if optim-speed
-      (with-gensyms (ptr-x ix ptr-out iout n)
-        (once-only (x out)
-          `(progn
-             (ptr-iterate-but-inner ,elt-size ,n ((,ptr-x   ,ix   ,x)
-                                                  (,ptr-out ,iout ,out))
-                                    (,c-fn ,n ,ptr-x ,ix ,ptr-out ,iout))
-             ,out)))
-      form))
-
 (defmacro define-one-arg-functions (name single-float-c-name double-float-c-name)
 
   ;; TODO: Use ARRAY or STATIC-ARRAY
@@ -36,7 +18,9 @@
          ((x (array single-float)) &key ((out (array single-float))
                                          (zeros-like x)))
          (values (array single-float) &optional)
-       (one-arg-fn/non-simple-array 4 ',single-float-c-name x :out out)
+       (ptr-iterate-but-inner 4 n ((ptr-x   ix   x)
+                                   (ptr-out iout out))
+                              (,single-float-c-name n ptr-x ix ptr-out iout))
        out)
 
      ;; There isn't much benefit to SIMPLE-ARRAYs even for 2 dimensional arrays
@@ -57,7 +41,9 @@
          ((x (array double-float)) &key ((out (array double-float))
                                          (zeros-like x)))
          (values (array double-float) &optional)
-       (one-arg-fn/non-simple-array 8 ',double-float-c-name x :out out)
+       (ptr-iterate-but-inner 8 n ((ptr-x   ix   x)
+                                   (ptr-out iout out))
+                              (,double-float-c-name n ptr-x ix ptr-out iout))
        out)
 
      (defpolymorph (,name :inline t)
