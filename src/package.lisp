@@ -103,4 +103,4 @@
 (5am:def-suite :dense-numericals)
 
 (push (cons (find-package :dense-numericals.impl) 'single-float)
-      *element-type-alist*)
+      *array-element-type-alist*)

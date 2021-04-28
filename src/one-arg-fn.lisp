@@ -85,9 +85,7 @@
      (defpolymorph (,name :inline t) ((x list) &key ((out null) nil outp))
          (values array &optional)
        (declare (ignorable out outp))
-       (,name (the (array ,(cdr (assoc (find-package :dense-numericals.impl)
-                                       *element-type-alist*)))
-                   (asarray x))))))
+       (,name (asarray x)))))
 
 (macrolet ((def (name
                  (single-float-c-name single-float-error
