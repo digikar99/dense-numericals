@@ -34,9 +34,10 @@
                    (ascii-table:add-row table
                                         (cons 'numpy
                                               (mapcar #'/ numpy lisp)))
-                   (ascii-table:add-row table
+                   (when torch
+		     (ascii-table:add-row table
                                         (cons 'torch
-                                              (mapcar #'/ torch lisp)))
+                                              (mapcar #'/ torch lisp))))
                    table)
                  s)))))
 

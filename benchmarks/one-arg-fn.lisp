@@ -24,6 +24,7 @@ def numpy_one_arg_fn(fn, a_sizes, o_sizes, num_operations, elt_type):
   return tuple(timings)
 ")
 
+  #-arm64
   (pyexec "
 def torch_one_arg_fn(fn, a_sizes, o_sizes, num_operations, elt_type):
   import time
@@ -46,6 +47,7 @@ def torch_one_arg_fn(fn, a_sizes, o_sizes, num_operations, elt_type):
 "))
 
 (defpyfun "numpy_one_arg_fn")
+#-arm64 
 (defpyfun "torch_one_arg_fn")
 
 ;; This is better suited as a function because we don't want to care about the
@@ -69,10 +71,10 @@ def torch_one_arg_fn(fn, a_sizes, o_sizes, num_operations, elt_type):
 
 (defun one-arg-fn (lisp-names numpy-names &optional torch-names)
   (pyexec "import numpy as np")
-  (pyexec "import torch as t")
-  (let* ((a-sizes '((10 1) (10 10) (100 100) (1000 1000) (10000 10000)))
-         (o-sizes '((10 1) (10 10) (100 100) (1000 1000) (10000 10000)))
-         (num-operations '(1e7 1e8 1e9 1e9 1e9)))
+  #-arm64 (pyexec "import torch as t")
+  (let* ((a-sizes '((10 1) (10 10) (100 100) (1000 1000) #-arm64 (10000 10000)))
+         (o-sizes '((10 1) (10 10) (100 100) (1000 1000) #-arm64 (10000 10000)))
+         (num-operations '(1e7 1e8 1e9 1e9 #-arm64 1e9)))
     (loop :for idx :below (length lisp-names)
           :for numpy-name := (nth idx numpy-names)
           :for lisp-name  := (nth idx lisp-names)
@@ -91,6 +93,7 @@ def torch_one_arg_fn(fn, a_sizes, o_sizes, num_operations, elt_type):
                                         :elt-type (numpy-element-type default-element-type)))
                     (torch-timings
                       (when torch-name
+			#-arm64
                         (torch-one-arg-fn :fn torch-name
                                           :a-sizes a-sizes
                                           :o-sizes o-sizes
