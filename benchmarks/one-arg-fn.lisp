@@ -57,17 +57,18 @@ def torch_one_arg_fn(fn, a_sizes, o_sizes, num_operations, elt_type):
         :for a-size := (elt a-sizes i)
         :for o-size := (elt o-sizes i)
         :collect
-        (let ((a (ones a-size :type elt-type))
-              (o (ones o-size :type elt-type))
-              (num-operation (floor (/ (elt num-operations i)
-                                       (apply #'* o-size))))
-              (fn (compile nil `(lambda (a &key out)
-                                  (declare (optimize speed)
-                                           (type (simple-array ,elt-type) a out))
-                                  (funcall ',fn a :out out)))))
-          (time-it
-            (loop :for i :of-type fixnum :below num-operation
-                  :do (funcall fn a :out o))))))
+        (let* ((a (ones a-size :type elt-type))
+               (o (ones o-size :type elt-type))
+               (num-operation (floor (/ (elt num-operations i)
+                                        (apply #'* o-size))))
+               (fn (compile nil
+                            `(lambda (a o)
+                               (declare (type (simple-array ,elt-type) a o))
+                               (time-it
+                                 (locally (declare (optimize speed))
+                                   (loop :for i :of-type fixnum :below ,num-operation
+                                         :do (,fn a :out o))))))))
+          (funcall fn a o))))
 
 (defun one-arg-fn (lisp-names numpy-names &optional torch-names)
   (pyexec "import numpy as np")
