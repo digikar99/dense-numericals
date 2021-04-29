@@ -3,7 +3,8 @@ SHELL=/data/data/com.termux/files/usr/bin/bash
 ARCH=$(uname -m)
 
 if [ "$ARCH" == "x86_64" ]; then
-    gcc -O3 -mavx2 -shared -o libdense-numericals.so -fpic -Wall -Werror dense-numericals.c -lsleef
+    gcc -O3 -mavx2 -mfma -shared -o libdense-numericals.so -fpic dense-numericals.c
+    # TODO: Prepare according to different architectures
 else
-    gcc -O3 -shared -o libdense-numericals.so -fpic -Wall -Werror dense-numericals.c -lsleef 
+    gcc -O3 -shared -o libdense-numericals.so -fpic -Wall -Werror dense-numericals.c
 fi
