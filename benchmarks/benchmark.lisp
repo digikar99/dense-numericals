@@ -66,6 +66,9 @@
 ;;; - https://stackoverflow.com/questions/19363484/representing-infinity-and-nan-independent-of-implementation
 ;;; - https://linux.die.net/man/3/fedisableexcept
 
+(defparameter *numpy* t)
+(defparameter *torch* #+arm64 nil #-arm64 t)
+
 (defun benchmark (&rest element-types)
   (let (reports)
     (unwind-protect

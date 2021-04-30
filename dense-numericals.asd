@@ -8,6 +8,7 @@
                "uiop"
                "cffi"
                "fiveam"
+               "lparallel"
                "adhoc-polymorphic-functions"
                "dense-arrays+static-vectors"
                "trivial-package-local-nicknames")

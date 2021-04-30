@@ -16,6 +16,11 @@
                                (array= (macro-map-array nil ',name rand)
                                        (,name rand)
                                        :test #'float-close-p)))
+                (5am:is-true (let ((rand (rand 2 dn:*multithreaded-threshold*
+                                               :type ',type :min ,min :max ,max)))
+                               (array= (macro-map-array nil ',name rand)
+                                       (,name rand)
+                                       :test #'float-close-p)))
                 (5am:is-true (let* ((rand (aref (rand '(100 100) :type ',type
                                                                  :min ,min :max ,max)
                                                 '(10 :step 2))))

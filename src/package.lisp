@@ -10,7 +10,8 @@
   (:documentation "Depends on foreign-functions")
   (:mix :dense-numericals-lite)
   (:reexport :dense-numericals-lite)
-  (:export #:sin
+  (:export #:*multithreaded-threshold*
+           #:sin
            #:cos
            #:tan
            #:asin
