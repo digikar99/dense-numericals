@@ -68,6 +68,10 @@ one_arg_fn(expm1);
 
 two_arg_fn(pow);
 two_arg_fn(atan2);
+two_arg_fn(add);
+two_arg_fn(sub);
+two_arg_fn(mul);
+two_arg_fn(div);
 
 one_arg_fn(cbrt);
 

@@ -39,8 +39,8 @@
 
 (defmacro define-two-arg-functions (name
                                     (first-arg second-arg)
-                                    single-float-c-name
-                                    double-float-c-name)
+                                    (single-float-c-name single-float-return-type)
+                                    (double-float-c-name double-float-return-type))
     `(progn
        
        (defpolymorph ,name ((,first-arg number) (,second-arg number) &key ((out null) nil))
@@ -50,7 +50,7 @@
        
        (defpolymorph ,name ((,first-arg (array single-float)) (,second-arg (array single-float))
                             &key ((out (array single-float)) (zeros-like ,first-arg)))
-           (array single-float)
+           (array ,single-float-return-type)
          ;; TODO: Handle broadcasting
          ;; TODO: Handle cases reducible to exp2, exp and exp10
          (ptr-iterate-but-inner 4 n ((ptr-x ix ,first-arg)
@@ -65,7 +65,7 @@
        (defpolymorph ,name ((,first-arg (simple-array single-float))
                             (,second-arg (simple-array single-float))
                             &key ((out (simple-array single-float)) (zeros-like ,first-arg)))
-           (simple-array single-float)
+           (simple-array ,single-float-return-type)
          ;; TODO: Handle cases reducible to exp2, exp and exp10
          (let ((ptr-x (ptr ,first-arg))
                (ptr-y (ptr ,second-arg))
@@ -79,7 +79,7 @@
 
        (defpolymorph ,name ((,first-arg (array double-float)) (,second-arg (array double-float))
                             &key ((out (array double-float)) (zeros-like ,first-arg)))
-           (array double-float)
+           (array ,double-float-return-type)
          ;; TODO: Handle broadcasting
          ;; TODO: Handle cases reducible to exp2, exp and exp10
          (ptr-iterate-but-inner 8 n ((ptr-x ix ,first-arg)
@@ -94,7 +94,7 @@
        (defpolymorph ,name ((,first-arg (simple-array double-float))
                             (,second-arg (simple-array double-float))
                             &key ((out (simple-array double-float)) (zeros-like ,first-arg)))
-           (simple-array double-float)
+           (simple-array ,double-float-return-type)
          ;; TODO: Handle cases reducible to exp2, exp and exp10
          (let ((ptr-x (ptr ,first-arg))
                (ptr-y (ptr ,second-arg))
@@ -123,7 +123,8 @@
              `(progn
                 (define-polymorphic-function ,name (,first-arg ,second-arg &key out))
                 (define-two-arg-functions ,name (,first-arg ,second-arg)
-                                          ,single-float-c-name ,double-float-c-name)
+                    (,single-float-c-name single-float)
+                    (,double-float-c-name double-float))
                 ;; If someone is worried about the compilation time; then know that that comes
                 ;; from this def-test form :/
                 (define-numericals-two-arg-test ,name array
@@ -134,7 +135,31 @@
     (c:dn-spow 2f-7)
     (c:dn-dpow 1d-15)))
 
+(macrolet ((def (name (first-arg second-arg)
+                 (single-float-c-name single-float-return-type single-float-error
+                  &optional (sf-min 0.0f0) (sf-max 1.0f0))
+                 (double-float-c-name double-float-return-type double-float-error
+                  &optional (df-min 0.0d0) (df-max 1.0d0)))
+             (eval `(define-polymorphic-function ,name (&rest args)
+                      :overwrite t))
+             `(progn
+                (define-polymorphic-function ,name (&rest args))
+                (define-two-arg-functions ,name (,first-arg ,second-arg)
+                    (,single-float-c-name ,single-float-return-type)
+                    (,double-float-c-name ,double-float-return-type))
+                ;; If someone is worried about the compilation time; then know that that comes
+                ;; from this def-test form :/
+                (define-numericals-two-arg-test ,name array
+                    (,single-float-error ,sf-min ,sf-max single-float)
+                    (,double-float-error ,df-min ,df-max double-float)))))
+
+  (def dn:+ (x y) (c:dn-sadd single-float 1f-7) (c:dn-dadd double-float 1d-15))
+  (def dn:- (x y) (c:dn-ssub single-float 1f-7) (c:dn-dsub double-float 1d-15))
+  (def dn:* (x y) (c:dn-smul single-float 1f-7) (c:dn-dmul double-float 1d-15))
+  (def dn:/ (x y) (c:dn-sdiv single-float 1f-7) (c:dn-ddiv double-float 1d-15)))
+
 (define-two-arg-functions dn:atan (x y) c:dn-satan2 c:dn-datan2)
+  
 ;; (define-numericals-two-arg-test dn:atan array
 ;;     (2f-7  0.0f0 1.0f0 single-float)
 ;;     (1d-15 0.0d0 1.0d0 double-float))

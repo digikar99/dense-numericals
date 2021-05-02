@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdint.h>
 #include "sleef/sleefinline_purec_scalar.h"
+#include "purec.c"
 
 #define sleefify_f32(base_name) Sleef_##base_name##f1_u10purec
 #define sleefify_f64(base_name) Sleef_##base_name##d1_u10purec
@@ -64,6 +65,10 @@ one_arg_fn_body_ff(expm1);
 
 two_arg_fn_body_fff(pow);
 two_arg_fn_body_fff(atan2);
+two_arg_fn_body_fff(add);
+two_arg_fn_body_fff(sub);
+two_arg_fn_body_fff(mul);
+two_arg_fn_body_fff(div);
 /* // two_arg_fn_body(copysign); */
 /* // two_arg_fn_body(fmax); */
 /* // two_arg_fn_body(fmin); */
