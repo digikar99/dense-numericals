@@ -35,7 +35,7 @@ void static inline vecf64_store_multi(vecf64 v, double* ptr, const long stride){
 }
 
 #include "float_float.c"
-#include "float_float_float.c"
+#include "two_arg_fn_body.c"
 
 one_arg_fn_body_ff(sin);
 one_arg_fn_body_ff(cos);
@@ -63,12 +63,21 @@ one_arg_fn_body_ff(exp2);
 one_arg_fn_body_ff(exp10);
 one_arg_fn_body_ff(expm1);
 
-two_arg_fn_body_fff(pow);
-two_arg_fn_body_fff(atan2);
-two_arg_fn_body_fff(add);
-two_arg_fn_body_fff(sub);
-two_arg_fn_body_fff(mul);
-two_arg_fn_body_fff(div);
+two_arg_fn_body(spow,   pow,   SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+two_arg_fn_body(satan2, atan2, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+two_arg_fn_body(sadd,   add,   SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+two_arg_fn_body(ssub,   sub,   SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+two_arg_fn_body(smul,   mul,   SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+two_arg_fn_body(sdiv,   div,   SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+
+
+two_arg_fn_body(dpow,   pow,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+two_arg_fn_body(datan2, atan2, SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+two_arg_fn_body(dadd,   add,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+two_arg_fn_body(dsub,   sub,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+two_arg_fn_body(dmul,   mul,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+two_arg_fn_body(ddiv,   div,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+
 /* // two_arg_fn_body(copysign); */
 /* // two_arg_fn_body(fmax); */
 /* // two_arg_fn_body(fmin); */
