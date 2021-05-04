@@ -22,8 +22,8 @@
          ((x (array single-float)) &key ((out (array single-float))
                                          (zeros-like x)))
          (array single-float)
-       (ptr-iterate-but-inner 4 n ((ptr-x   ix   x)
-                                   (ptr-out iout out))
+       (ptr-iterate-but-inner n ((ptr-x   4 ix   x)
+                                 (ptr-out 4 iout out))
                               (,single-float-c-name n ptr-x ix ptr-out iout))
        out)
 
@@ -60,8 +60,8 @@
          ((x (array double-float)) &key ((out (array double-float))
                                          (zeros-like x)))
          (array double-float)
-       (ptr-iterate-but-inner 8 n ((ptr-x   ix   x)
-                                   (ptr-out iout out))
+       (ptr-iterate-but-inner n ((ptr-x   8 ix   x)
+                                 (ptr-out 8 iout out))
                               (,double-float-c-name n ptr-x ix ptr-out iout))
        out)
 

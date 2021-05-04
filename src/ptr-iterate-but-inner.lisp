@@ -10,12 +10,13 @@
                                    (array-displaced-to array)))
                              static-vectors::+array-header-size+))))
 
-(defmacro ptr-iterate-but-inner (elt-size n-var bindings expression)
-  "Each bindings is of the form (PTR-VAR INNER-STRIDE-VAR ARRAY-EXPR)."
+(defmacro ptr-iterate-but-inner (n-var bindings expression)
+  "Each bindings is of the form (PTR-VAR ELT-SIZE INNER-STRIDE-VAR ARRAY-EXPR)."
 
   (let* ((pointers      (mapcar #'first  bindings))
-         (array-exprs   (mapcar #'third  bindings))
-         (inner-strides (mapcar #'second bindings))
+         (elt-sizes     (mapcar #'second bindings))
+         (inner-strides (mapcar #'third bindings))
+         (array-exprs   (mapcar #'fourth  bindings))
          (num-arrays    (length bindings)))
 
     (let ((array-vars   (make-gensym-list num-arrays "ARRAY"))
@@ -46,30 +47,34 @@
                         ;; (mapc #'print (list ,dimensions ,@pointers))
                         (if (null (rest ,dimensions))
                             (progn
-                              ,@(mapcar (lm ptr o `(cffi:incf-pointer
-                                                       ,ptr (the-int-index (* ,elt-size ,o))))
-                                        pointers os)
+                              ,@(mapcar (lm ptr o elt-size
+                                            `(cffi:incf-pointer
+                                                 ,ptr (the-int-index (* ,elt-size ,o))))
+                                        pointers os elt-sizes)
                               ,expression
-                              ,@(mapcar (lm ptr o `(cffi:incf-pointer
-                                                       ,ptr (the-int-index
-                                                                 (* ,elt-size
-                                                                    (- ,o)))))
-                                        pointers os)
+                              ,@(mapcar (lm ptr o elt-size
+                                            `(cffi:incf-pointer
+                                                 ,ptr (the-int-index
+                                                       (* ,elt-size
+                                                          (- ,o)))))
+                                        pointers os elt-sizes)
                               nil)
                             (loop :initially
-                                  ,@(mapcar (lm ptr o `(cffi:incf-pointer
-                                                           ,ptr (the-int-index (* ,elt-size ,o))))
-                                            pointers os)
+                                  ,@(mapcar (lm ptr o elt-size
+                                                `(cffi:incf-pointer
+                                                     ,ptr (the-int-index (* ,elt-size ,o))))
+                                            pointers os elt-sizes)
                                   :repeat ,n-var
                                   :do (nest-loop
                                        (rest ,dimensions)
                                        ,@(mapcar (lm strides `(rest ,strides)) strides)
                                        ,@(mapcar (lm offsets `(rest ,offsets)) offsets))
-                                  ,@(mapcar (lm ptr s `(cffi:incf-pointer
-                                                           ,ptr (the-int-index (* ,elt-size ,s))))
-                                            pointers ss)
+                                  ,@(mapcar (lm ptr s elt-size
+                                                `(cffi:incf-pointer
+                                                     ,ptr (the-int-index (* ,elt-size ,s))))
+                                            pointers ss elt-sizes)
                                   :finally
-                                  ,@(mapcar (lm ptr o s
+                                  ,@(mapcar (lm ptr o s elt-size
                                                 `(cffi:incf-pointer
                                                      ,ptr
                                                      (the-int-index
@@ -78,6 +83,6 @@
                                                                   (- (+ ,o
                                                                         (the-int-index
                                                                          (* ,n-var ,s)))))))))
-                                            pointers os ss))))))
+                                            pointers os ss elt-sizes))))))
              (nest-loop (narray-dimensions ,(first array-vars))
                         ,@strides ,@offsets)))))))
