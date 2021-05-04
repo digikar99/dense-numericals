@@ -3,7 +3,7 @@
 (defpackage :dense-numericals-lite
   (:documentation "Functionality in this package is available with pure lisp.")
   (:use)
-  (:export +))
+  (:export))
 
 (uiop:define-package :dense-numericals
   (:use)
@@ -30,6 +30,12 @@
 
            #:sqrt
 
+           #:copy
+           #:concat
+           #:matmul
+           #:two-arg-matmul
+           #:dot
+
            #:+
            #:two-arg-+
            #:*
@@ -55,7 +61,7 @@
            #:two-arg->=))
 
 (uiop:define-package :dense-numericals.impl
-  (:mix :dense-arrays-plus-lite :cl :alexandria)
+  (:mix :dense-arrays-plus-lite :cl :alexandria :iterate)
   (:import-from :adhoc-polymorphic-functions
                 :define-polymorphic-function
                 :defpolymorph
@@ -78,11 +84,15 @@
                 #:define-splice-list-fn
                 #:dimensions))
 
+(defpackage :dense-numericals.linalg
+  (:export #:axpy))
+
 (in-package :dense-numericals.impl)
 
 (loop :for (nick package) :in '((:dn       :dense-numericals)
                                 (:c        :dense-numericals.c)
-                                (:linalg.c :dense-numericals.linalg.c))
+                                (:linalg.c :dense-numericals.linalg.c)
+                                (:linalg   :dense-numericals.linalg))
       :do (trivial-package-local-nicknames:add-package-local-nickname nick package))
 
 (defvar *src-dir* (asdf:component-pathname (asdf:find-system "dense-numericals")))

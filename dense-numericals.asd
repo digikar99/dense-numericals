@@ -9,6 +9,7 @@
                "cffi"
                "fiveam"
                "lparallel"
+               "policy-cond"
                "adhoc-polymorphic-functions"
                "dense-arrays+static-vectors"
                "trivial-package-local-nicknames")
@@ -24,7 +25,8 @@
                                                            "test"
                                                            "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
-                                                           "two-arg-fn")))
+                                                           "two-arg-fn"))
+               (:file "blas"                  :depends-on ("linalg")))
   :perform (test-op (o c)
              (declare (ignore o c))
              ;; Or should we use STATIC?
