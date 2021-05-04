@@ -65,11 +65,51 @@ vecf32 static inline Sleef_subf8_u10avx2(vecf32 a, vecf32 b){return _mm256_sub_p
 vecf32 static inline Sleef_mulf8_u10avx2(vecf32 a, vecf32 b){return _mm256_mul_ps(a, b);}
 vecf32 static inline Sleef_divf8_u10avx2(vecf32 a, vecf32 b){return _mm256_div_ps(a, b);}
 
+// A quick test on numpy will suggest that numpy uses the "ordered" "non-signalling"
+// comparisons
+// - https://www.felixcloutier.com/x86/cmppd#tbl-3-1
+vecf32 static inline Sleef_ltf8_u10avx2(vecf32 a, vecf32 b){
+  return _mm256_cmp_ps(a, b, _CMP_LT_OQ);
+}
+vecf32 static inline Sleef_lef8_u10avx2(vecf32 a, vecf32 b){
+  return _mm256_cmp_ps(a, b, _CMP_LE_OQ);
+}
+vecf32 static inline Sleef_eqf8_u10avx2(vecf32 a, vecf32 b){
+  return _mm256_cmp_ps(a, b, _CMP_EQ_OQ);
+}
+vecf32 static inline Sleef_neqf8_u10avx2(vecf32 a, vecf32 b){
+  return _mm256_cmp_ps(a, b, _CMP_NEQ_OQ);
+}
+vecf32 static inline Sleef_gtf8_u10avx2(vecf32 a, vecf32 b){
+  return _mm256_cmp_ps(a, b, _CMP_GT_OQ);
+}
+vecf32 static inline Sleef_gef8_u10avx2(vecf32 a, vecf32 b){
+  return _mm256_cmp_ps(a, b, _CMP_GE_OQ);
+}
+
+
 vecf64 static inline Sleef_addd4_u10avx2(vecf64 a, vecf64 b){return _mm256_add_pd(a, b);}
 vecf64 static inline Sleef_subd4_u10avx2(vecf64 a, vecf64 b){return _mm256_sub_pd(a, b);}
 vecf64 static inline Sleef_muld4_u10avx2(vecf64 a, vecf64 b){return _mm256_mul_pd(a, b);}
 vecf64 static inline Sleef_divd4_u10avx2(vecf64 a, vecf64 b){return _mm256_div_pd(a, b);}
-
+vecf64 static inline Sleef_ltd4_u10avx2(vecf64 a, vecf64 b){
+  return _mm256_cmp_pd(a, b, _CMP_LT_OQ);
+}
+vecf64 static inline Sleef_led4_u10avx2(vecf64 a, vecf64 b){
+  return _mm256_cmp_pd(a, b, _CMP_LE_OQ);
+}
+vecf64 static inline Sleef_eqd4_u10avx2(vecf64 a, vecf64 b){
+  return _mm256_cmp_pd(a, b, _CMP_EQ_OQ);
+}
+vecf64 static inline Sleef_neqd4_u10avx2(vecf64 a, vecf64 b){
+  return _mm256_cmp_pd(a, b, _CMP_NEQ_OQ);
+}
+vecf64 static inline Sleef_gtd4_u10avx2(vecf64 a, vecf64 b){
+  return _mm256_cmp_pd(a, b, _CMP_GT_OQ);
+}
+vecf64 static inline Sleef_ged4_u10avx2(vecf64 a, vecf64 b){
+  return _mm256_cmp_pd(a, b, _CMP_GE_OQ);
+}
 
 
 
