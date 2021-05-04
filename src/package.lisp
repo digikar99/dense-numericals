@@ -29,6 +29,8 @@
 
            #:sqrt
 
+           #:copy
+
            #:+
            #:two-arg-+
            #:*
@@ -95,9 +97,13 @@
                   :*src-dir*)
     (:export :*src-dir*)))
 
+(defpackage :dense-numericals.linalg
+  (:export #:axpy))
+
 (loop :for (nick package) :in '((:dn       :dense-numericals)
                                 (:c        :dense-numericals.c)
-                                (:linalg.c :dense-numericals.linalg.c))
+                                (:linalg.c :dense-numericals.linalg.c)
+                                (:linalg :dense-numericals.linalg))
       :do (trivial-package-local-nicknames:add-package-local-nickname nick package))
 
 (5am:def-suite :dense-numericals)

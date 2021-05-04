@@ -23,7 +23,8 @@
                                                            "test"
                                                            "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
-                                                           "two-arg-fn")))
+                                                           "two-arg-fn"))
+               (:file "two-arg-fn-adv"              :depends-on ("two-arg-fn")))
   :perform (test-op (o c)
              (declare (ignore o c))
              ;; Or should we use STATIC?
