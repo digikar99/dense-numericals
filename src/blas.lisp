@@ -85,6 +85,7 @@
                       (b (simple-array single-float 1))
                       &key out)
     t
+  (declare (ignore out))
   ;; TODO: Generalize this to more dimensions
   (linalg.c:cblas-sdot (array-total-size a)
                        (ptr a) 1

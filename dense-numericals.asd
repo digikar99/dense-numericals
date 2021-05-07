@@ -13,6 +13,7 @@
                "adhoc-polymorphic-functions"
                "dense-arrays+static-vectors"
                "trivial-package-local-nicknames")
+  ;; TODO: Use CFFI-GROVEL or something to manage shared library / c files
   :components ((:file "spec")
                (:file "linalg")
                (:file "package"               :depends-on ("spec" "linalg"))

@@ -12,7 +12,8 @@
                     (cl:merge-pathnames #P"linalg-specs/"
                                         (asdf:component-pathname (asdf:find-system "dense-numericals")))
                     :function-package :dense-numericals.linalg.c
-                    :constant-package :dense-numericals.linalg.c)
+                    :constant-package :dense-numericals.linalg.c
+                    :release-p cl:t)
 
 (cl:in-package :cl)
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -27,4 +28,5 @@
                     (cl:merge-pathnames #P"linalg-specs/"
                                         (asdf:component-pathname (asdf:find-system "dense-numericals")))
                     :function-package :dense-numericals.linalg.c
-                    :constant-package :dense-numericals.linalg.c)
+                    :constant-package :dense-numericals.linalg.c
+                    :release-p cl:t)
