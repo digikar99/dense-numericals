@@ -35,6 +35,7 @@
            #:matmul
            #:two-arg-matmul
            #:dot
+           #:sum
 
            #:+
            #:two-arg-+

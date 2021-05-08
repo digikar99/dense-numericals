@@ -27,7 +27,10 @@
                                                            "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
                                                            "two-arg-fn"))
-               (:file "blas"                  :depends-on ("linalg")))
+               (:file "blas"                  :depends-on ("linalg"))
+               (:file "concatenate"           :depends-on ("blas"))
+               (:file "sum"                   :depends-on ("blas"
+                                                           "two-arg-fn")))
   :perform (test-op (o c)
              (declare (ignore o c))
              ;; Or should we use STATIC?
