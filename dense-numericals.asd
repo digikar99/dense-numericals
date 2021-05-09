@@ -25,8 +25,11 @@
                (:file "two-arg-fn"            :depends-on ("spec"
                                                            "test"
                                                            "ptr-iterate-but-inner"))
+               (:file "two-arg-fn-non-broadcast" :depends-on ("spec"
+                                                              "test"
+                                                              "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
-                                                           "two-arg-fn"))
+                                                           "two-arg-fn-non-broadcast"))
                (:file "blas"                  :depends-on ("linalg"))
                (:file "concatenate"           :depends-on ("blas"))
                (:file "sum"                   :depends-on ("blas"

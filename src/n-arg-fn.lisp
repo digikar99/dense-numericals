@@ -11,7 +11,7 @@
    (array-likes :initarg :array-likes :reader condition-array-likes))
   (:report (lambda (c s)
              (pprint-logical-block (s nil)
-               (format s "The following array-likes with dimensions~%~{~%  ~S~}~%cannot be broadcast together:" (condition-dimensions c))
+               (format s "The following array-likes with dimensions~{~%  ~S~}~%cannot be broadcast together:~%" (condition-dimensions c))
                (pprint-logical-block (s nil :per-line-prefix "  ")
                  (format s "~S" (condition-array-likes c)))))))
 
