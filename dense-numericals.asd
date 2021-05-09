@@ -30,7 +30,8 @@
                (:file "blas"                  :depends-on ("linalg"))
                (:file "concatenate"           :depends-on ("blas"))
                (:file "sum"                   :depends-on ("blas"
-                                                           "two-arg-fn")))
+                                                           "two-arg-fn"))
+               (:file "misc"                  :depends-on ("package")))
   :perform (test-op (o c)
              (declare (ignore o c))
              ;; Or should we use STATIC?

@@ -33,53 +33,41 @@
 ;;         (dn:two-arg-matmul a b :out c))
 
 (define-polymorphic-function dn:two-arg-matmul (a b &key out) :overwrite t)
-(defpolymorph dn:two-arg-matmul ((a (simple-array single-float 2))
-                                 (b (simple-array single-float 2))
-                                 &key ((out (simple-array single-float 2))))
-    (simple-array single-float 2)
-  ;; TODO: Generalize this to more dimensions
-  (let ((m (array-dimension a 0))
-        (k (array-dimension a 1))
-        (n (array-dimension b 1)))
-    (linalg.c:cblas-sgemm linalg.c:+cblas-col-major+
-                          linalg.c:+cblas-no-trans+
-                          linalg.c:+cblas-no-trans+
-                          m n k
-                          1.0f0
-                          (ptr a) m
-                          (ptr b) k
-                          0.0f0
-                          (ptr out) m))
-  out)
 
-(defpolymorph dn:two-arg-matmul ((a (simple-array single-float 2))
-                                 (b (simple-array single-float 2))
-                                 &key ((out (simple-array single-float 2))))
-    (simple-array single-float 2)
-  ;; TODO: Generalize this to more dimensions
-  (flet ((matmul-compatible-arrays (a b out)
-           (let ((a0 (array-dimension a 0))
-                 (a1 (array-dimension a 1))
-                 (b0 (array-dimension b 0))
-                 (b1 (array-dimension b 1))
-                 (o0 (array-dimension out 0))
-                 (o1 (array-dimension out 1)))
-             (and (= a0 o0) (= a1 b0) (= b1 o1)))))
-    (policy-cond:with-expectations (= 0 safety)
-        ((assertion (matmul-compatible-arrays a b out) (a b out)))
-      (let ((m (array-dimension a 0))
-            (k (array-dimension a 1))
-            (n (array-dimension b 1)))
-        (linalg.c:cblas-sgemm linalg.c:+cblas-col-major+
-                              linalg.c:+cblas-no-trans+
-                              linalg.c:+cblas-no-trans+
-                              m n k
-                              1.0f0
-                              (ptr a) m
-                              (ptr b) k
-                              0.0f0
-                              (ptr out) m))))
-  out)
+(macrolet ((def (element-type c-fn)
+             `(defpolymorph dn:two-arg-matmul ((a (simple-array ,element-type 2))
+                                               (b (simple-array ,element-type 2))
+                                               &key ((out (simple-array ,element-type 2))))
+                  (simple-array ,element-type 2)
+                ;; TODO: Generalize this to more dimensions
+                (flet ((matmul-compatible-arrays (a b out)
+                         (let ((a0 (array-dimension a 0))
+                               (a1 (array-dimension a 1))
+                               (b0 (array-dimension b 0))
+                               (b1 (array-dimension b 1))
+                               (o0 (array-dimension out 0))
+                               (o1 (array-dimension out 1)))
+                           (and (= a0 o0) (= a1 b0) (= b1 o1)))))
+                  (policy-cond:with-expectations (= 0 safety)
+                      ((assertion (matmul-compatible-arrays a b out) (a b out)))
+                    (let ((m (array-dimension a 0))
+                          (k (array-dimension a 1))
+                          (n (array-dimension b 1)))
+                      (,c-fn linalg.c:+cblas-col-major+
+                             linalg.c:+cblas-no-trans+
+                             linalg.c:+cblas-no-trans+
+                             m n k
+                             (coerce 1 ',element-type)
+                             (ptr a) m
+                             (ptr b) k
+                             (coerce 0 ',element-type)
+                             (ptr out) m))))
+                out)))
+  
+  (def single-float linalg.c:cblas-sgemm)
+  (def double-float linalg.c:cblas-dgemm))
+
+
 
 (define-polymorphic-function dn:dot (a b &key out) :overwrite t)
 (defpolymorph dn:dot ((a (array single-float 1))
@@ -105,6 +93,3 @@
   (linalg.c:cblas-sdot (array-total-size a)
                        (ptr a) 1
                        (ptr b) 1))
-
-
-
