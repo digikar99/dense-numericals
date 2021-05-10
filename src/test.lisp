@@ -10,8 +10,9 @@
   (flet ((verification-form (type error min max)
            `(progn
               (flet ((float-close-p (x y)
-                       (< (/ (abs (- x y)) (abs x))
-                          ,error)))
+                       (or (= x y)
+                           (< (/ (abs (- x y)) (abs x))
+                              ,error))))
                 (5am:is-true (let ((rand (rand 1000 :type ',type :min ,min :max ,max)))
                                (array= (macro-map-array nil ',name rand)
                                        (,name rand)

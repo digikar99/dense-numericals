@@ -105,6 +105,22 @@ one_arg_fn_body_u10(dexpm1, expm1, SIMD_DOUBLE_STRIDE, double, vecf64, f64, doub
 
 
 
+// We aren't adding rint because it has no common-lisp equivalent
+// - none I know of
+
+one_arg_fn_body(sfabs,  fabs, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+one_arg_fn_body(sceil,  ceil, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+one_arg_fn_body(strunc, trunc, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+one_arg_fn_body(sfloor, floor, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+one_arg_fn_body(sround, round, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
+
+one_arg_fn_body(dfabs,  fabs, SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+one_arg_fn_body(dceil,  ceil, SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+one_arg_fn_body(dtrunc, trunc, SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+one_arg_fn_body(dfloor, floor, SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+one_arg_fn_body(dround, round, SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
+
+
 
 two_arg_fn_body_u10(spow,   pow,   SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
 two_arg_fn_body_u10(satan2, atan2, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);

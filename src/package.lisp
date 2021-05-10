@@ -30,6 +30,12 @@
 
            #:sqrt
 
+           #:ffloor
+           #:fceiling
+           #:fround
+           #:abs
+           #:ftruncate
+
            #:copy
            #:concat
            #:matmul

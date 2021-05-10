@@ -141,18 +141,31 @@
   (def dn:asinh (c:dn-sasinh 2f-7) (c:dn-dasinh 1d-15))
   (def dn:acosh (c:dn-sacosh 2f-7 1.0f0 2.0f0) (c:dn-dacosh 1d-15 1.0d0 2.0d0))
   (def dn:atanh (c:dn-satanh 2f-7) (c:dn-datanh 1d-15))
+
   (def dn:exp (c:dn-sexp 2f-7) (c:dn-dexp 1d-15))
-  (def dn:sqrt (c:dn-ssqrt 2f-7) (c:dn-dsqrt 2f-7)))
+  (def dn:sqrt (c:dn-ssqrt 2f-7) (c:dn-dsqrt 1d-15))
+  (def dn:abs (c:dn-sfabs 0.0f0) (c:dn-dfabs 0.0f0)))
 
 ;; Handle atan case specially
 (define-polymorphic-function dn:atan (x &rest args) :overwrite t)
 (define-one-arg-functions dn:atan c:dn-satan c:dn-datan)
 (define-numericals-one-arg-test dn:atan array (2f-7) (1d-15))
 
-(define-polymorphic-function dn:log (value &rest args) :overwrite t)
-(define-one-arg-functions dn:log c:dn-slog c:dn-dlog)
-(define-numericals-one-arg-test dn:log array (2f-7) (1d-15))
 
+(macrolet ((def (name
+                 (single-float-c-name single-float-error)
+                 (double-float-c-name double-float-error))
+             (eval `(define-polymorphic-function ,name (value &rest args) :overwrite t))
+             `(progn
+                (define-polymorphic-function ,name (value &rest args))
+                (define-one-arg-functions ,name ,single-float-c-name ,double-float-c-name)
+                (define-numericals-one-arg-test ,name array
+                    (,single-float-error) (,double-float-error)))))
+  (def dn:log (c:dn-slog 2f-7) (c:dn-dlog 1d-15))
+  (def dn:fround (c:dn-sround 0.0f0) (c:dn-dround 0.0d0))
+  (def dn:ftruncate (c:dn-strunc 0.0f0) (c:dn-dtrunc 0.0d0))
+  (def dn:ffloor (c:dn-sfloor 0.0f0) (c:dn-dfloor 0.0d0))
+  (def dn:fceiling (c:dn-sceil 0.0f0) (c:dn-dceil 0.0d0)))
 
 (macrolet ((def (name op)
              `(progn

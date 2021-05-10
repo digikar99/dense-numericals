@@ -111,7 +111,8 @@ one_arg_fn(sqrt);
 one_arg_fn(trunc);
 one_arg_fn(floor);
 one_arg_fn(ceil);
-one_arg_fn(rint); // round | TODO: Check the diff between rint and round
+one_arg_fn(round);
+/* one_arg_fn(rint); // don't know the common-lisp equivalent, not adding */
 one_arg_fn(fabs);
 
 /* two_arg_fn(copysign); */
