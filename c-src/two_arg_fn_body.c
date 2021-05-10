@@ -1,5 +1,5 @@
 
-#define two_arg_fn_body(name, sleef_name, stride, itype, ivec, iscalar, otype, ovec) \
+#define two_arg_fn_body_u10(name, sleef_name, stride, itype, ivec, iscalar, otype, ovec) \
   void DN_##name(const long n,                                          \
                  itype *x, const long incx,                             \
                  itype *y, const long incy,                             \
@@ -12,7 +12,7 @@
       while(out != simd_end){                                           \
         va = ivec##_load(x);                                            \
         vb = ivec##_load(y);                                            \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store(out, vc);                                          \
         x += stride;                                                    \
         y += stride;                                                    \
@@ -23,7 +23,7 @@
       while(out != simd_end){                                           \
         va = ivec##_make(x, incx);                                      \
         vb = ivec##_load(y);                                            \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store(out, vc);                                          \
         x += stride*incx;                                               \
         y += stride;                                                    \
@@ -34,7 +34,7 @@
       while(out != simd_end){                                           \
         va = ivec##_load(x);                                            \
         vb = ivec##_make(y, incy);                                      \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store(out, vc);                                          \
         x += stride;                                                    \
         y += stride*incy;                                               \
@@ -45,7 +45,7 @@
       while(x != simd_end){                                             \
         va = ivec##_load(x);                                            \
         vb = ivec##_load(y);                                            \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store_multi(vc, out, inc_out);                           \
         x += stride;                                                    \
         y += stride;                                                    \
@@ -56,7 +56,7 @@
       while(out != simd_end){                                           \
         va = ivec##_make(x, incx);                                      \
         vb = ivec##_make(y, incy);                                      \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store(out, vc);                                          \
         x += stride*incx;                                               \
         y += stride*incy;                                               \
@@ -67,7 +67,7 @@
       while(y != simd_end){                                             \
         va = ivec##_make(x, incx);                                      \
         vb = ivec##_load(y);                                            \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store_multi(vc, out, inc_out);                           \
         x += stride*incx;                                               \
         y += stride;                                                    \
@@ -78,7 +78,7 @@
       while(x != simd_end){                                             \
         va = ivec##_load(x);                                            \
         vb = ivec##_make(y, incy);                                      \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store_multi(vc, out, inc_out);                           \
         x += stride;                                                    \
         y += stride*incy;                                               \
@@ -90,7 +90,7 @@
       while(i != simd_end){                                             \
         va = ivec##_make(x, incx);                                      \
         vb = ivec##_make(y, incy);                                      \
-        vc = sleefify_##ivec(sleef_name)(va, vb);                       \
+        vc = sleefify_##ivec##_u10(sleef_name)(va, vb);                 \
         ovec##_store_multi(vc, out, inc_out);                           \
         i += stride;                                                    \
         x += stride*incx;                                               \
@@ -100,9 +100,9 @@
     }                                                                   \
                                                                         \
     while(out!=out_end){                                                \
-      out[0] = sleefify_##iscalar(sleef_name)(x[0], y[0]);              \
+      out[0] = sleefify_##iscalar##_u10(sleef_name)(x[0], y[0]);        \
       x += incx;                                                        \
       y += incy;                                                        \
       out += inc_out;                                                   \
     }                                                                   \
-  };                                                                    
+  };
