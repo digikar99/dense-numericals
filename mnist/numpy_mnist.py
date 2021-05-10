@@ -1,5 +1,6 @@
 import numpy as np 
 import pickle as pkl
+from scipy.special import logsumexp
 def fetch_data_from_csv_and_dump_pkl():
 	x=np.loadtxt("mnist_train.csv",skiprows=1,delimiter=",")
 	y=np.loadtxt("mnist_test.csv",skiprows=1,delimiter=",")
@@ -17,20 +18,6 @@ def fetch_data_from_pkl(file):
 def xavier_init(fan_in,fan_out,shape):
 	x=np.sqrt(6)/np.sqrt(fan_out+fan_in)
 	return np.random.uniform(-x,x,size=shape)
-
-class Tanh(object):
-	def __init__(self):
-		self.func=np.tanh
-		self.weights={}
-		self.requires_grad=False
-
-	def __call__(self,batch):
-		self.context=self.func(batch)
-		return self.context
-
-	def backward(self,grd_wrt_out):
-		#------ out = tanh ( input ), to cal d o/d input= d o/d out * d out/d input
-		return grd_wrt_out* (1-self.context*self.context)
 
 class Softmax(object):
 	def __init__(self):
@@ -54,7 +41,7 @@ class Softmax(object):
 class Linear(object):
 	def __init__(self,in_dim,out_dim,bias=True):
 		self.A=xavier_init(in_dim,out_dim,shape=(in_dim,out_dim))
-		self.b=xavier_init(in_dim,out_dim,shape=(out_dim))
+		self.b=np.ones((out_dim))
 		self.dA=None
 		self.db=None
 		self.requires_grad=True
@@ -75,19 +62,25 @@ class Linear(object):
 		self.A-=lr*self.dA
 		self.b-=lr*self.db
 
-class BCELoss(object):
+class CEWithLogitsLoss(object):
 	def __init__(self):
 		self.requires_grad=False
 
 	def __call__(self,batch,y):
 		self.batch=batch
-		self.y=y.astype(int)
-		return np.mean(-np.log(batch[self.y]))
+		self.y=y
+		denom=logsumexp(batch,axis=1,keepdims=True)
+		self.log_softmax=batch-denom
+		return -np.mean(self.log_softmax[y.astype(int)])
 	def backward(self):
-		grad=np.zeros_like(self.batch)
-		x=self.batch.shape[0]
-		grad[self.y]=-1/(x*self.batch[self.y])
-		return grad
+		# grad=np.zeros_like(self.batch)
+		# x=self.batch.shape[0]
+		# grad[self.y]=-1/(x*self.batch[self.y])
+		# return grad
+		onehot_y=np.zeros_like(self.log_softmax)
+		size_0=self.log_softmax.shape[0]
+		onehot_y[np.arange(size_0),self.y.astype(int)]=1
+		return (np.exp(self.log_softmax)-onehot_y)/size_0
 
 
 def forward(module_list,batch):
@@ -108,8 +101,6 @@ def backprop_and_update(module_list,loss_object,lr):
 		
 def evaluate(x,module_list,y):
 	predict=[]
-
-
 	for i in range(len(x)):
 		batch_x=x[i]
 		# batch_y=dataloader_y_train[i]
@@ -123,14 +114,17 @@ def evaluate(x,module_list,y):
 inp_feat=784
 out_clases=10
 # module_list=[Linear(inp_feat,128),Tanh(),Linear(128,9),Softmax()] 
-module_list=[Linear(inp_feat,9),Softmax()] 
-loss_object=BCELoss()
+# module_list=[Linear(inp_feat,10),Softmax()] 
+module_list=[Linear(inp_feat,10)] 
+loss_object=CEWithLogitsLoss()
 
 x,y=fetch_data_from_pkl("train")
-x=x/255-0.5
+x=x/255
 batch_size=1000
-dataloader_x_eval=np.array_split(x,batch_size)
-dataloader_y_eval=np.array_split(y,batch_size)
+x_test,y_test=fetch_data_from_pkl("test")
+x_test=x_test/255
+dataloader_x_eval=np.array_split(x_test,batch_size)
+dataloader_y_eval=np.array_split(y_test,batch_size)
 
 acc=evaluate(dataloader_x_eval,module_list,dataloader_y_eval)
 print("acc -1",acc)
@@ -150,9 +144,3 @@ for epoch in range(100):
 	# print(loss)
 	acc=evaluate(dataloader_x_eval,module_list,dataloader_y_eval)
 	print("acc",acc)
-
-
-
-
-
-
