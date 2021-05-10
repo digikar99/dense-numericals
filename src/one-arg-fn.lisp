@@ -149,6 +149,10 @@
 (define-one-arg-functions dn:atan c:dn-satan c:dn-datan)
 (define-numericals-one-arg-test dn:atan array (2f-7) (1d-15))
 
+(define-polymorphic-function dn:log (value &rest args) :overwrite t)
+(define-one-arg-functions dn:log c:dn-slog c:dn-dlog)
+(define-numericals-one-arg-test dn:log array (2f-7) (1d-15))
+
 
 (macrolet ((def (name op)
              `(progn
