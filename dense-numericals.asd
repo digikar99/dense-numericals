@@ -58,3 +58,11 @@
              (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-BACKEND* :CL))
                                         (5AM:RUN :DENSE-NUMERICALS/BENCHMARKS))"))))
 
+(asdf:defsystem "dense-numericals/examples"
+  :pathname "examples/"
+  :version "0.1.0"
+  :depends-on ("alexandria"
+               "dense-numericals"
+               "numpy-file-format")
+  :components ((:file "mnist")))
+
