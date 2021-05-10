@@ -43,7 +43,10 @@
 (macrolet ((def (element-type c-fn)
              `(defpolymorph dn:two-arg-matmul ((a (simple-array ,element-type 2))
                                                (b (simple-array ,element-type 2))
-                                               &key ((out (simple-array ,element-type 2))))
+                                               &key ((out (simple-array ,element-type 2))
+                                                     (zeros (array-dimension a 0)
+                                                            (array-dimension b 1)
+                                                            :type ',element-type)))
                   (simple-array ,element-type 2)
                 ;; TODO: Generalize this to more dimensions
                 (flet ((matmul-compatible-arrays (a b out)
@@ -56,23 +59,55 @@
                            (and (= a0 o0) (= a1 b0) (= b1 o1)))))
                   (policy-cond:with-expectations (= 0 safety)
                       ((assertion (matmul-compatible-arrays a b out) (a b out)))
-                    (let ((m (array-dimension a 0))
-                          (k (array-dimension a 1))
-                          (n (array-dimension b 1)))
+                    ;; We do C^T = (B^T A^T) - since we are unable
+                    ;; to obtain the result with linalg.c:+cblas-row-major+ :/
+                    (let ((m (array-dimension b 1))
+                          (k (array-dimension b 0))
+                          (n (array-dimension a 0)))
                       (,c-fn linalg.c:+cblas-col-major+
                              linalg.c:+cblas-no-trans+
                              linalg.c:+cblas-no-trans+
                              m n k
                              (coerce 1 ',element-type)
-                             (ptr a) m
-                             (ptr b) k
+                             (ptr b) m
+                             (ptr a) k
                              (coerce 0 ',element-type)
                              (ptr out) m))))
                 out)))
-  
+
   (def single-float linalg.c:cblas-sgemm)
   (def double-float linalg.c:cblas-dgemm))
 
+(5am:def-test dn:two-arg-matmul ()
+  (loop :for *array-element-type* :in '(single-float double-float)
+        :do
+           (5am:is (array= (asarray '((2)))
+                           (dn:two-arg-matmul (asarray '((1)))
+                                              (asarray '((2)))
+                                              :out (zeros 1 1))))
+           (5am:is (array= (asarray '((8)))
+                           (dn:two-arg-matmul (asarray '((1 2)))
+                                              (asarray '((2) (3)))
+                                              :out (zeros 1 1))))
+           (5am:is (array= (asarray '((2 4)
+                                      (3 6)))
+                           (dn:two-arg-matmul (asarray '((2) (3)))
+                                              (asarray '((1 2)))
+                                              :out (zeros 2 2))))
+           (5am:is (array= (asarray '((2 4)
+                                      (3 6)
+                                      (1 2)))
+                           (dn:two-arg-matmul (asarray '((2) (3) (1)))
+                                              (asarray '((1 2)))
+                                              :out (zeros 3 2))))
+           (5am:is (array= (asarray '((2 4)
+                                      (3 6)
+                                      (1 2)))
+                           (dn:two-arg-matmul (asarray '((2) (3) (1)))
+                                              (asarray '((1 2))))))
+           (5am:signals error (dn:two-arg-matmul (asarray '((2) (3) (1)))
+                                                 (asarray '((1 2 3)))
+                                                 :out (zeros 3 2)))))
 
 
 (define-polymorphic-function dn:dot (a b &key out) :overwrite t)
