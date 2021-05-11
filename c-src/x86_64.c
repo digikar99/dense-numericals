@@ -56,6 +56,8 @@ vecf64 static inline Sleef_divd8_u10avx2(vecf64 a, vecf64 b){return _mm512_div_p
 
 typedef __m256 vecf32;
 typedef __m256d vecf64;
+typedef __m256 boolf32;
+typedef __m256d boolf64;
 const int SIMD_SINGLE_STRIDE = 8;
 const int SIMD_DOUBLE_STRIDE = 4;
 
@@ -65,6 +67,12 @@ void static inline vecf32_store(float* ptr, vecf32 v){ return _mm256_storeu_ps(p
 vecf64 static inline vecf64_load(double* ptr){ return _mm256_loadu_pd(ptr); }
 void static inline vecf64_store(double* ptr, vecf64 v){ return _mm256_storeu_pd(ptr, v); }
 
+void static inline vecf32_store_bool(vecf32 v, _Bool* ptr, const long stride){
+  for(int i=0; i<SIMD_SINGLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
+}
+void static inline vecf64_store_bool(vecf64 v, _Bool* ptr, const long stride){
+  for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
+}
 
 vecf32 static inline Sleef_addf8_u10avx2(vecf32 a, vecf32 b){return _mm256_add_ps(a, b);}
 vecf32 static inline Sleef_subf8_u10avx2(vecf32 a, vecf32 b){return _mm256_sub_ps(a, b);}
@@ -74,22 +82,22 @@ vecf32 static inline Sleef_divf8_u10avx2(vecf32 a, vecf32 b){return _mm256_div_p
 // A quick test on numpy will suggest that numpy uses the "ordered" "non-signalling"
 // comparisons
 // - https://www.felixcloutier.com/x86/cmppd#tbl-3-1
-vecf32 static inline Sleef_ltf8_avx2(vecf32 a, vecf32 b){
+boolf32 static inline Sleef_ltf8_avx2(vecf32 a, vecf32 b){
   return _mm256_cmp_ps(a, b, _CMP_LT_OQ);
 }
-vecf32 static inline Sleef_lef8_avx2(vecf32 a, vecf32 b){
+boolf32 static inline Sleef_lef8_avx2(vecf32 a, vecf32 b){
   return _mm256_cmp_ps(a, b, _CMP_LE_OQ);
 }
-vecf32 static inline Sleef_eqf8_avx2(vecf32 a, vecf32 b){
+boolf32 static inline Sleef_eqf8_avx2(vecf32 a, vecf32 b){
   return _mm256_cmp_ps(a, b, _CMP_EQ_OQ);
 }
-vecf32 static inline Sleef_neqf8_avx2(vecf32 a, vecf32 b){
+boolf32 static inline Sleef_neqf8_avx2(vecf32 a, vecf32 b){
   return _mm256_cmp_ps(a, b, _CMP_NEQ_OQ);
 }
-vecf32 static inline Sleef_gtf8_avx2(vecf32 a, vecf32 b){
+boolf32 static inline Sleef_gtf8_avx2(vecf32 a, vecf32 b){
   return _mm256_cmp_ps(a, b, _CMP_GT_OQ);
 }
-vecf32 static inline Sleef_gef8_avx2(vecf32 a, vecf32 b){
+boolf32 static inline Sleef_gef8_avx2(vecf32 a, vecf32 b){
   return _mm256_cmp_ps(a, b, _CMP_GE_OQ);
 }
 
@@ -98,22 +106,23 @@ vecf64 static inline Sleef_addd4_u10avx2(vecf64 a, vecf64 b){return _mm256_add_p
 vecf64 static inline Sleef_subd4_u10avx2(vecf64 a, vecf64 b){return _mm256_sub_pd(a, b);}
 vecf64 static inline Sleef_muld4_u10avx2(vecf64 a, vecf64 b){return _mm256_mul_pd(a, b);}
 vecf64 static inline Sleef_divd4_u10avx2(vecf64 a, vecf64 b){return _mm256_div_pd(a, b);}
-vecf64 static inline Sleef_ltd4_avx2(vecf64 a, vecf64 b){
+
+boolf64 static inline Sleef_ltd4_avx2(vecf64 a, vecf64 b){
   return _mm256_cmp_pd(a, b, _CMP_LT_OQ);
 }
-vecf64 static inline Sleef_led4_avx2(vecf64 a, vecf64 b){
+boolf64 static inline Sleef_led4_avx2(vecf64 a, vecf64 b){
   return _mm256_cmp_pd(a, b, _CMP_LE_OQ);
 }
-vecf64 static inline Sleef_eqd4_avx2(vecf64 a, vecf64 b){
+boolf64 static inline Sleef_eqd4_avx2(vecf64 a, vecf64 b){
   return _mm256_cmp_pd(a, b, _CMP_EQ_OQ);
 }
-vecf64 static inline Sleef_neqd4_avx2(vecf64 a, vecf64 b){
+boolf64 static inline Sleef_neqd4_avx2(vecf64 a, vecf64 b){
   return _mm256_cmp_pd(a, b, _CMP_NEQ_OQ);
 }
-vecf64 static inline Sleef_gtd4_avx2(vecf64 a, vecf64 b){
+boolf64 static inline Sleef_gtd4_avx2(vecf64 a, vecf64 b){
   return _mm256_cmp_pd(a, b, _CMP_GT_OQ);
 }
-vecf64 static inline Sleef_ged4_avx2(vecf64 a, vecf64 b){
+boolf64 static inline Sleef_ged4_avx2(vecf64 a, vecf64 b){
   return _mm256_cmp_pd(a, b, _CMP_GE_OQ);
 }
 

@@ -26,9 +26,6 @@ void static inline vecf32_store_multi(vecf32 v, float* ptr, const long stride){
   // TODO: Optimize this
   for(int i=0; i<SIMD_SINGLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
 }
-void static inline vecf32_store_bool(vecf32 v, _Bool* ptr, const long stride){
-  for(int i=0; i<SIMD_SINGLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
-}
 
 vecf64 static inline vecf64_make(double* ptr, const long stride){
   vecf64 v;
@@ -36,9 +33,6 @@ vecf64 static inline vecf64_make(double* ptr, const long stride){
   return v;
 }
 void static inline vecf64_store_multi(vecf64 v, double* ptr, const long stride){
-  for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
-}
-void static inline vecf64_store_bool(vecf64 v, _Bool* ptr, const long stride){
   for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
 }
 
@@ -137,19 +131,19 @@ two_arg_fn_body_u10(dmul,   mul,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, doub
 two_arg_fn_body_u10(ddiv,   div,   SIMD_DOUBLE_STRIDE, double, vecf64, f64, double, vecf64);
 
 
-two_arg_fn_body_comparison(slt,  lt,  SIMD_SINGLE_STRIDE, float, vecf32, f32);
-two_arg_fn_body_comparison(sle,  le,  SIMD_SINGLE_STRIDE, float, vecf32, f32);
-two_arg_fn_body_comparison(seq,  eq,  SIMD_SINGLE_STRIDE, float, vecf32, f32);
-two_arg_fn_body_comparison(sneq, neq, SIMD_SINGLE_STRIDE, float, vecf32, f32);
-two_arg_fn_body_comparison(sge,  ge,  SIMD_SINGLE_STRIDE, float, vecf32, f32);
-two_arg_fn_body_comparison(sgt,  gt,  SIMD_SINGLE_STRIDE, float, vecf32, f32);
+two_arg_fn_body_comparison(slt,  lt,  SIMD_SINGLE_STRIDE, float, vecf32, f32, boolf32);
+two_arg_fn_body_comparison(sle,  le,  SIMD_SINGLE_STRIDE, float, vecf32, f32, boolf32);
+two_arg_fn_body_comparison(seq,  eq,  SIMD_SINGLE_STRIDE, float, vecf32, f32, boolf32);
+two_arg_fn_body_comparison(sneq, neq, SIMD_SINGLE_STRIDE, float, vecf32, f32, boolf32);
+two_arg_fn_body_comparison(sge,  ge,  SIMD_SINGLE_STRIDE, float, vecf32, f32, boolf32);
+two_arg_fn_body_comparison(sgt,  gt,  SIMD_SINGLE_STRIDE, float, vecf32, f32, boolf32);
 
-two_arg_fn_body_comparison(dlt,  lt,  SIMD_DOUBLE_STRIDE, double, vecf64, f64);
-two_arg_fn_body_comparison(dle,  le,  SIMD_DOUBLE_STRIDE, double, vecf64, f64);
-two_arg_fn_body_comparison(deq,  eq,  SIMD_DOUBLE_STRIDE, double, vecf64, f64);
-two_arg_fn_body_comparison(dneq, neq, SIMD_DOUBLE_STRIDE, double, vecf64, f64);
-two_arg_fn_body_comparison(dge,  ge,  SIMD_DOUBLE_STRIDE, double, vecf64, f64);
-two_arg_fn_body_comparison(dgt,  gt,  SIMD_DOUBLE_STRIDE, double, vecf64, f64);
+two_arg_fn_body_comparison(dlt,  lt,  SIMD_DOUBLE_STRIDE, double, vecf64, f64, boolf64);
+two_arg_fn_body_comparison(dle,  le,  SIMD_DOUBLE_STRIDE, double, vecf64, f64, boolf64);
+two_arg_fn_body_comparison(deq,  eq,  SIMD_DOUBLE_STRIDE, double, vecf64, f64, boolf64);
+two_arg_fn_body_comparison(dneq, neq, SIMD_DOUBLE_STRIDE, double, vecf64, f64, boolf64);
+two_arg_fn_body_comparison(dge,  ge,  SIMD_DOUBLE_STRIDE, double, vecf64, f64, boolf64);
+two_arg_fn_body_comparison(dgt,  gt,  SIMD_DOUBLE_STRIDE, double, vecf64, f64, boolf64);
 
 
 /* // two_arg_fn_body(copysign); */

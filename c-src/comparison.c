@@ -1,13 +1,13 @@
 
-#define two_arg_fn_body_comparison(name, sleef_name, stride, type, vec, scalar) \
+#define two_arg_fn_body_comparison(name, sleef_name, stride, type, vec, scalar, bool_vec) \
   void DN_##name(const long n,                                          \
                  type *x, const long incx,                              \
                  type *y, const long incy,                              \
-                 _Bool *out, const long inc_out){                        \
-    _Bool *out_end = out + inc_out * n;                                  \
-    vec va, vb, vc;                                                     \
+                 _Bool *out, const long inc_out){                       \
+    _Bool *out_end = out + inc_out * n;                                 \
+    vec va, vb; bool_vec vc;                                            \
     if (incx == 1 && incy == 1 && inc_out == 1){                        \
-      _Bool *simd_end = out + (n/stride)*stride;                         \
+      _Bool *simd_end = out + (n/stride)*stride;                        \
       while(out != simd_end){                                           \
         va = vec##_load(x);                                             \
         vb = vec##_load(y);                                             \
@@ -18,7 +18,7 @@
         out += stride;                                                  \
       }                                                                 \
     }else if(incy == 1 && inc_out == 1){                                \
-      _Bool *simd_end = out + (n/stride)*stride;                         \
+      _Bool *simd_end = out + (n/stride)*stride;                        \
       while(out != simd_end){                                           \
         va = vec##_make(x, incx);                                       \
         vb = vec##_load(y);                                             \
@@ -29,7 +29,7 @@
         out += stride;                                                  \
       }                                                                 \
     }else if(incx == 1 && inc_out == 1){                                \
-      _Bool *simd_end = out + (n/stride)*stride;                         \
+      _Bool *simd_end = out + (n/stride)*stride;                        \
       while(out != simd_end){                                           \
         va = vec##_load(x);                                             \
         vb = vec##_make(y, incy);                                       \
@@ -51,7 +51,7 @@
         out += stride*inc_out;                                          \
       }                                                                 \
     }else if(inc_out == 1){                                             \
-      _Bool *simd_end = out + (n/stride)*stride;                         \
+      _Bool *simd_end = out + (n/stride)*stride;                        \
       while(out != simd_end){                                           \
         va = vec##_make(x, incx);                                       \
         vb = vec##_make(y, incy);                                       \
@@ -99,7 +99,7 @@
     }                                                                   \
                                                                         \
     while(out!=out_end){                                                \
-      out[0] = sleefify_##scalar(sleef_name)(x[0], y[0]);              \
+      out[0] = sleefify_##scalar(sleef_name)(x[0], y[0]);               \
       x += incx;                                                        \
       y += incy;                                                        \
       out += inc_out;                                                   \
