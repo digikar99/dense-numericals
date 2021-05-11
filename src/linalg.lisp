@@ -7,7 +7,8 @@
 
 (cl:in-package :dense-numericals.linalg.c)
 ;; TODO: Avoid hardcoding the path
-(autowrap:c-include #P"/usr/include/x86_64-linux-gnu/cblas.h"
+(autowrap:c-include #+x86-64 #P"/usr/include/x86_64-linux-gnu/cblas.h"
+		    #+arm64 #P"/usr/include/aarch64-linux-gnu/cblas.h"
                     :spec-path
                     (cl:merge-pathnames #P"linalg-specs/"
                                         (asdf:component-pathname (asdf:find-system "dense-numericals")))
@@ -23,7 +24,8 @@
 
 
 (cl:in-package :dense-numericals.linalg.c)
-(autowrap:c-include #P"/usr/include/x86_64-linux-gnu/cblas.h"
+(autowrap:c-include #+x86-64 #P"/usr/include/x86_64-linux-gnu/cblas.h"
+		    #+arm64 #P"/usr/include/aarch64-linux-gnu/cblas.h"
                     :spec-path
                     (cl:merge-pathnames #P"linalg-specs/"
                                         (asdf:component-pathname (asdf:find-system "dense-numericals")))
