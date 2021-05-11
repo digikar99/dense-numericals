@@ -9,6 +9,8 @@
   (:use)
   (:documentation "Depends on foreign-functions")
   (:mix :dense-numericals-lite)
+  (:import-from :trivial-coerce
+                #:coerce)
   (:reexport :dense-numericals-lite)
   (:export #:*multithreaded-threshold*
            #:sin
@@ -37,6 +39,7 @@
            #:ftruncate
 
            #:copy
+           #:coerce
            #:concat
            #:matmul
            #:two-arg-matmul

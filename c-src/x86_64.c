@@ -15,6 +15,7 @@
 #define sleefify_vecf32(base_name) Sleef_##base_name##f16_avx512f
 #define sleefify_vecf64(base_name) Sleef_##base_name##d8_avx512f
 
+typedef __m256 vecf32h;
 typedef __m512 vecf32;
 typedef __m512d vecf64;
 typedef __mmask8 boolf64;
@@ -30,12 +31,6 @@ vecf64 static inline vecf64_load(double* ptr){ return _mm512_loadu_pd(ptr); }
 void static inline vecf64_store(double* ptr, vecf64 v){ return _mm512_storeu_pd(ptr, v); }
 
 
-vecf32 static inline Sleef_addf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_add_ps(a, b);}
-vecf32 static inline Sleef_subf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_sub_ps(a, b);}
-vecf32 static inline Sleef_mulf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_mul_ps(a, b);}
-vecf32 static inline Sleef_divf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_div_ps(a, b);}
-
-
 // FIXME: Prolly not the most efficient way to do things via bitshifting
 void static inline vecf32_store_bool(boolf32 v, _Bool* ptr, const long stride){
   for(int i=0; i<SIMD_SINGLE_STRIDE; i++) (ptr+i*stride)[0] = (v>>i)&1;
@@ -43,6 +38,19 @@ void static inline vecf32_store_bool(boolf32 v, _Bool* ptr, const long stride){
 void static inline vecf64_store_bool(boolf64 v, _Bool* ptr, const long stride){
   for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = (v>>i)&i;
 }
+
+
+vecf32h static inline vecf32h_load(float* ptr){ return _mm256_loadu_ps(ptr);}
+void static inline vecf32h_store(float* ptr, vecf32h v){ return _mm256_storeu_ps(ptr, v);}
+
+vecf64 static inline vecf32h_to_vecf64(vecf32h a){return _mm512_cvtps_pd(a);}
+vecf32h static inline vecf64_to_vecf32h(vecf64 a){return _mm512_cvtpd_ps(a);}
+
+
+vecf32 static inline Sleef_addf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_add_ps(a, b);}
+vecf32 static inline Sleef_subf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_sub_ps(a, b);}
+vecf32 static inline Sleef_mulf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_mul_ps(a, b);}
+vecf32 static inline Sleef_divf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_div_ps(a, b);}
 
 
 boolf32 static inline Sleef_ltf16_avx512f(vecf32 a, vecf32 b){
@@ -106,6 +114,7 @@ boolf64 static inline Sleef_ged8_avx512f(vecf64 a, vecf64 b){
 #define sleefify_vecf32(base_name) Sleef_##base_name##f8_avx2
 #define sleefify_vecf64(base_name) Sleef_##base_name##d4_avx2
 
+typedef __m128 vecf32h; // half
 typedef __m256 vecf32;
 typedef __m256d vecf64;
 typedef __m256 boolf32;
@@ -125,6 +134,12 @@ void static inline vecf32_store_bool(vecf32 v, _Bool* ptr, const long stride){
 void static inline vecf64_store_bool(vecf64 v, _Bool* ptr, const long stride){
   for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
 }
+
+vecf32h static inline vecf32h_load(float* ptr){ return _mm_loadu_ps(ptr);}
+void static inline vecf32h_store(float* ptr, vecf32h v){ return _mm_storeu_ps(ptr, v);}
+
+vecf64 static inline vecf32h_to_vecf64(vecf32h a){return _mm256_cvtps_pd(a);}
+vecf32h static inline vecf64_to_vecf32h(vecf64 a){return _mm256_cvtpd_ps(a);}
 
 vecf32 static inline Sleef_addf8_u10avx2(vecf32 a, vecf32 b){return _mm256_add_ps(a, b);}
 vecf32 static inline Sleef_subf8_u10avx2(vecf32 a, vecf32 b){return _mm256_sub_ps(a, b);}
@@ -193,6 +208,7 @@ boolf64 static inline Sleef_ged4_avx2(vecf64 a, vecf64 b){
 #define sleefify_vecf32(base_name) Sleef_##base_name##f4_sse2
 #define sleefify_vecf64(base_name) Sleef_##base_name##d2_sse2
 
+typedef __m128 vecf32h;
 typedef __m128 vecf32;
 typedef __m128d vecf64;
 typedef __m128 boolf32;
@@ -213,6 +229,13 @@ void static inline vecf32_store_bool(vecf32 v, _Bool* ptr, const long stride){
 void static inline vecf64_store_bool(vecf64 v, _Bool* ptr, const long stride){
   for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
 }
+
+
+vecf32h static inline vecf32h_load(float* ptr){ return _mm_loadu_ps(ptr);}
+void static inline vecf32h_store(float* ptr, vecf32h v){ return _mm_storeu_ps(ptr, v);}
+
+vecf64 static inline vecf32h_to_vecf64(vecf32h a){return _mm_cvtps_pd(a);}
+vecf32h static inline vecf64_to_vecf32h(vecf64 a){return _mm_cvtpd_ps(a);}
 
 
 vecf32 static inline Sleef_addf4_u10sse2(vecf32 a, vecf32 b){return _mm_add_ps(a, b);}

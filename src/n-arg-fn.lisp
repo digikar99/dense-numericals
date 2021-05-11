@@ -1,10 +1,5 @@
 (in-package :dense-numericals.impl)
 
-(defun ensure-appropriate-dense-array (array-like)
-  (if (typep array-like `(array ,default-element-type))
-      array-like
-      (asarray (ensure-list array-like) default-element-type)))
-
 ;; FIXME: This should be in DENSE-ARRAYS itself?
 (define-condition incompatible-broadcast-dimensions (error)
   ((dimensions :initarg :dimensions :reader condition-dimensions)
@@ -49,7 +44,7 @@
                           (rest array-likes)
                           :initial-value (first array-likes))))))
   (def dn:+ dn:two-arg-+)
-  (def dn:- dn:two-arg--))
+  (def dn:* dn:two-arg-*))
 
 (macrolet ((def (name reduce-fn invert-fn)
              `(define-splice-list-fn ,name (array-likes &key out)

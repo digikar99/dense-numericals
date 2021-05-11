@@ -5,11 +5,12 @@
 ;; The first is slower on the author's PC :/ - 10 times as slower as numpy
 ;; (cffi:load-foreign-library #p"/usr/lib/x86_64-linux-gnu/libblas.so")
 ;; The second is fast, much faster :D - at par with numpy
-(cffi:load-foreign-library #+x86-64 #p"/usr/lib/x86_64-linux-gnu/libopenblas.so"
-			   #+arm64 #p"/usr/lib/aarch64-linux-gnu/libopenblas.so")
+(cffi:load-foreign-library #+x86-64 #p"/usr/lib/x86_64-linux-gnu/libopenblas.so.0"
+                           #+arm64 #p"/usr/lib/aarch64-linux-gnu/libopenblas.so")
 ;; The miniconda equivalents aren't faster than this for DN:SUM below
 
-(define-polymorphic-function dn:copy (x &key out) :overwrite t)
+(define-polymorphic-function dn:copy (x &key out))
+
 (defpolymorph dn:copy
     ((x (array single-float))  &key
      ((out (array single-float)) (zeros-like x)))

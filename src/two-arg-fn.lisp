@@ -118,7 +118,7 @@
 
 
 
-     ;; double-float - 4 polymorphs
+     ;; double-float - 3 polymorphs
 
      (defpolymorph ,name ((,first-arg (array double-float)) (,second-arg number)
                           &key ((out (array ,double-float-return-type))

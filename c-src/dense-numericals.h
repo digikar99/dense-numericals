@@ -31,7 +31,12 @@
  *              double* out, const long inc_out);
  */
 
-
+DN_cast_sd(const long n,
+           float* x, const long incx,
+           double* y, const long incy);
+DN_cast_ds(const long n,
+           double* x, const long incx,
+           float* y, const long incy);
 
 // These use the u10 functions
 one_arg_fn(sin);

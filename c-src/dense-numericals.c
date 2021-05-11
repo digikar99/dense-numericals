@@ -16,7 +16,11 @@
   #include "aarch64.c"
 #endif
 
-
+vecf32h static inline vecf32h_make(float* ptr, const long stride){
+  vecf32h v;
+  for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) v[i] = ptr[i*stride];
+  return v;
+}
 vecf32 static inline vecf32_make(float* ptr, const long stride){
   vecf32 v;
   for(int i=0; i<SIMD_SINGLE_STRIDE; i++) v[i] = ptr[i*stride];
@@ -25,6 +29,10 @@ vecf32 static inline vecf32_make(float* ptr, const long stride){
 void static inline vecf32_store_multi(vecf32 v, float* ptr, const long stride){
   // TODO: Optimize this
   for(int i=0; i<SIMD_SINGLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
+}
+void static inline vecf32h_store_multi(vecf32h v, float* ptr, const long stride){
+  // TODO: Optimize this
+  for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
 }
 
 vecf64 static inline vecf64_make(double* ptr, const long stride){
@@ -40,6 +48,7 @@ void static inline vecf64_store_multi(vecf64 v, double* ptr, const long stride){
 #include "one_arg_fn_body.c"
 #include "two_arg_fn_body.c"
 #include "comparison.c"
+#include "cast.c"
 
 one_arg_fn_body_u10(ssin, sin, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);
 one_arg_fn_body_u10(scos, cos, SIMD_SINGLE_STRIDE, float, vecf32, f32, float, vecf32);

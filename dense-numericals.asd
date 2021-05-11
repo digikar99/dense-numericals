@@ -12,6 +12,7 @@
                "policy-cond"
                "adhoc-polymorphic-functions"
                "dense-arrays+static-vectors"
+               "trivial-coerce"
                "trivial-package-local-nicknames")
   ;; TODO: Use CFFI-GROVEL or something to manage shared library / c files
   :components ((:file "spec")
@@ -19,13 +20,17 @@
                (:file "package"               :depends-on ("spec" "linalg"))
                (:file "ptr-iterate-but-inner" :depends-on ("package"))
                (:file "test"                  :depends-on ("package"))
+               (:file "utils"                 :depends-on ("package"))
                (:file "one-arg-fn"            :depends-on ("spec"
+                                                           "utils"
                                                            "test"
                                                            "ptr-iterate-but-inner"))
                (:file "two-arg-fn"            :depends-on ("spec"
+                                                           "utils"
                                                            "test"
                                                            "ptr-iterate-but-inner"))
                (:file "two-arg-fn-non-broadcast" :depends-on ("spec"
+                                                              "utils"
                                                               "test"
                                                               "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
@@ -34,6 +39,7 @@
                (:file "concatenate"           :depends-on ("blas"))
                (:file "sum"                   :depends-on ("blas"
                                                            "two-arg-fn"))
+               (:file "coerce"                :depends-on ("one-arg-fn"))
                (:file "misc"                  :depends-on ("package")))
   :perform (test-op (o c)
              (declare (ignore o c))
