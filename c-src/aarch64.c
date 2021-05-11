@@ -3,9 +3,9 @@
 #include <arm_neon.h>
 #include "sleef/sleefinline_advsimd.h"
 
+typedef float32x2_t vecf32h;
 typedef float32x4_t vecf32;
 typedef float64x2_t vecf64;
-
 typedef uint32x4_t boolf32;
 typedef uint64x2_t boolf64;
 
@@ -30,6 +30,13 @@ void static inline vecf32_store_bool(boolf32 v, _Bool* ptr, const long stride){
 void static inline vecf64_store_bool(boolf64 v, _Bool* ptr, const long stride){
   for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = v[i];
 }
+
+vecf32h static inline vecf32h_load(float* ptr){ return vld1_f32(ptr);}
+void static inline vecf32h_store(float* ptr, vecf32h v){ return vst1_f32(ptr, v);}
+
+vecf64 static inline vecf32h_to_vecf64(vecf32h a){return vcvt_f64_f32(a);}
+vecf32h static inline vecf64_to_vecf32h(vecf64 a){return vcvt_f32_f64(a);}
+
 
 vecf32 static inline Sleef_addf4_u10advsimd(vecf32 a, vecf32 b){return vaddq_f32(a, b);}
 vecf32 static inline Sleef_subf4_u10advsimd(vecf32 a, vecf32 b){return vsubq_f32(a, b);}

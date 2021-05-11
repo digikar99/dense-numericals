@@ -1,5 +1,5 @@
 (in-package :dense-numericals.impl)
-(5am:in-suite :dense-numericals)
+(5am:in-suite array)
 
 ;;; We are not implementing ASTYPE, because dispatching on the TYPE
 ;;; requires TYPE= checks; instead we will provide a TRIVIAL-COERCE:COERCE wrapper!
