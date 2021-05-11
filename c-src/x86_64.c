@@ -12,11 +12,14 @@
 #define sleefify_vecf32_u10(base_name) Sleef_##base_name##f16_u10avx512f
 #define sleefify_vecf64_u10(base_name) Sleef_##base_name##d8_u10avx512f
 
-#define sleefify_vecf32(base_name) Sleef_##base_name##f8_avx512f
-#define sleefify_vecf64(base_name) Sleef_##base_name##d4_avx512f
+#define sleefify_vecf32(base_name) Sleef_##base_name##f16_avx512f
+#define sleefify_vecf64(base_name) Sleef_##base_name##d8_avx512f
 
 typedef __m512 vecf32;
 typedef __m512d vecf64;
+typedef __mmask8 boolf64;
+typedef __mmask16 boolf32;
+
 const int SIMD_SINGLE_STRIDE = 16;
 const int SIMD_DOUBLE_STRIDE = 8;
 
@@ -27,16 +30,65 @@ vecf64 static inline vecf64_load(double* ptr){ return _mm512_loadu_pd(ptr); }
 void static inline vecf64_store(double* ptr, vecf64 v){ return _mm512_storeu_pd(ptr, v); }
 
 
-vecf32 static inline Sleef_addf16_u10avx2(vecf32 a, vecf32 b){return _mm512_add_ps(a, b);}
-vecf32 static inline Sleef_subf16_u10avx2(vecf32 a, vecf32 b){return _mm512_sub_ps(a, b);}
-vecf32 static inline Sleef_mulf16_u10avx2(vecf32 a, vecf32 b){return _mm512_mul_ps(a, b);}
-vecf32 static inline Sleef_divf16_u10avx2(vecf32 a, vecf32 b){return _mm512_div_ps(a, b);}
+vecf32 static inline Sleef_addf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_add_ps(a, b);}
+vecf32 static inline Sleef_subf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_sub_ps(a, b);}
+vecf32 static inline Sleef_mulf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_mul_ps(a, b);}
+vecf32 static inline Sleef_divf16_u10avx512f(vecf32 a, vecf32 b){return _mm512_div_ps(a, b);}
 
-vecf64 static inline Sleef_addd8_u10avx2(vecf64 a, vecf64 b){return _mm512_add_pd(a, b);}
-vecf64 static inline Sleef_subd8_u10avx2(vecf64 a, vecf64 b){return _mm512_sub_pd(a, b);}
-vecf64 static inline Sleef_muld8_u10avx2(vecf64 a, vecf64 b){return _mm512_mul_pd(a, b);}
-vecf64 static inline Sleef_divd8_u10avx2(vecf64 a, vecf64 b){return _mm512_div_pd(a, b);}
 
+// FIXME: Prolly not the most efficient way to do things via bitshifting
+void static inline vecf32_store_bool(boolf32 v, _Bool* ptr, const long stride){
+  for(int i=0; i<SIMD_SINGLE_STRIDE; i++) (ptr+i*stride)[0] = (v>>i)&1;
+}
+void static inline vecf64_store_bool(boolf64 v, _Bool* ptr, const long stride){
+  for(int i=0; i<SIMD_DOUBLE_STRIDE; i++) (ptr+i*stride)[0] = (v>>i)&i;
+}
+
+
+boolf32 static inline Sleef_ltf16_avx512f(vecf32 a, vecf32 b){
+  return _mm512_cmp_ps_mask(a, b, _CMP_LT_OQ);
+}
+boolf32 static inline Sleef_lef16_avx512f(vecf32 a, vecf32 b){
+  return _mm512_cmp_ps_mask(a, b, _CMP_LE_OQ);
+}
+boolf32 static inline Sleef_eqf16_avx512f(vecf32 a, vecf32 b){
+  return _mm512_cmp_ps_mask(a, b, _CMP_EQ_OQ);
+}
+boolf32 static inline Sleef_neqf16_avx512f(vecf32 a, vecf32 b){
+  return _mm512_cmp_ps_mask(a, b, _CMP_NEQ_OQ);
+}
+boolf32 static inline Sleef_gtf16_avx512f(vecf32 a, vecf32 b){
+  return _mm512_cmp_ps_mask(a, b, _CMP_GT_OQ);
+}
+boolf32 static inline Sleef_gef16_avx512f(vecf32 a, vecf32 b){
+  return _mm512_cmp_ps_mask(a, b, _CMP_GE_OQ);
+}
+
+
+vecf64 static inline Sleef_addd8_u10avx512f(vecf64 a, vecf64 b){return _mm512_add_pd(a, b);}
+vecf64 static inline Sleef_subd8_u10avx512f(vecf64 a, vecf64 b){return _mm512_sub_pd(a, b);}
+vecf64 static inline Sleef_muld8_u10avx512f(vecf64 a, vecf64 b){return _mm512_mul_pd(a, b);}
+vecf64 static inline Sleef_divd8_u10avx512f(vecf64 a, vecf64 b){return _mm512_div_pd(a, b);}
+
+
+boolf64 static inline Sleef_ltd8_avx512f(vecf64 a, vecf64 b){
+  return _mm512_cmp_pd_mask(a, b, _CMP_LT_OQ);
+}
+boolf64 static inline Sleef_led8_avx512f(vecf64 a, vecf64 b){
+  return _mm512_cmp_pd_mask(a, b, _CMP_LE_OQ);
+}
+boolf64 static inline Sleef_eqd8_avx512f(vecf64 a, vecf64 b){
+  return _mm512_cmp_pd_mask(a, b, _CMP_EQ_OQ);
+}
+boolf64 static inline Sleef_neqd8_avx512f(vecf64 a, vecf64 b){
+  return _mm512_cmp_pd_mask(a, b, _CMP_NEQ_OQ);
+}
+boolf64 static inline Sleef_gtd8_avx512f(vecf64 a, vecf64 b){
+  return _mm512_cmp_pd_mask(a, b, _CMP_GT_OQ);
+}
+boolf64 static inline Sleef_ged8_avx512f(vecf64 a, vecf64 b){
+  return _mm512_cmp_pd_mask(a, b, _CMP_GE_OQ);
+}
 
 
 
