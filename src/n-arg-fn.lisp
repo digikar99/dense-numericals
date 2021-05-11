@@ -1,9 +1,9 @@
 (in-package :dense-numericals.impl)
 
-(defun ensure-dense-array (array-like)
-  (typecase array-like
-    (array array-like)
-    (t (asarray (ensure-list array-like)))))
+(defun ensure-appropriate-dense-array (array-like)
+  (if (typep array-like `(array ,default-element-type))
+      array-like
+      (asarray (ensure-list array-like) default-element-type)))
 
 ;; FIXME: This should be in DENSE-ARRAYS itself?
 (define-condition incompatible-broadcast-dimensions (error)
@@ -20,14 +20,24 @@
 (defun normalize-arguments/dmas (array-likes out)
   (if (every #'numberp array-likes)
       (values array-likes out)
-      (let ((arrays (mapcar #'ensure-dense-array array-likes)))
+      (let ((arrays (loop :for array-like :on array-likes
+                            :do (setf (first array-like)
+                                      (ensure-appropriate-dense-array (first array-like)))
+                          :finally (return array-likes))))
         (multiple-value-bind (broadcast-compatible-p dimensions)
-            (apply #'broadcast-compatible-p arrays)
+            (if out
+                (apply #'broadcast-compatible-p out arrays)
+                (apply #'broadcast-compatible-p arrays))
           (if broadcast-compatible-p
-              (values (apply #'broadcast-arrays arrays) (zeros dimensions))
+              (values (apply #'broadcast-arrays arrays)
+                      (or out (zeros dimensions)))
               (error 'incompatible-broadcast-dimensions
                      :array-likes array-likes
                      :dimensions (mapcar #'dimensions array-likes)))))))
+
+;;; These functions cannot have (much) benefits of a compiler-macro
+;;; until it becomes possible to tell the array dimensions at compile time.
+;;; TODO: Think about type normalization and upgradation and compiler-macro
 
 (macrolet ((def (name reduce-fn)
              `(define-splice-list-fn ,name (array-likes &key out)
@@ -54,3 +64,38 @@
                       (,invert-fn (first array-likes)))))))
   (def dn:- dn:two-arg-- dn:one-arg--)
   (def dn:/ dn:two-arg-- dn:one-arg-/))
+
+
+(defun normalize-arguments/cmp (array-likes out)
+  (if (every #'numberp array-likes)
+      (values array-likes out)
+      (let ((arrays (loop :for array-like :on array-likes
+                            :do (setf (first array-like)
+                                      (ensure-appropriate-dense-array (first array-like)))
+                          :finally (return array-likes))))
+        (multiple-value-bind (broadcast-compatible-p dimensions)
+            (if out
+                (apply #'broadcast-compatible-p out arrays)
+                (apply #'broadcast-compatible-p arrays))
+          (if broadcast-compatible-p
+              (values (apply #'broadcast-arrays arrays)
+                      (or out (zeros dimensions :type '(unsigned-byte 8))))
+              (error 'incompatible-broadcast-dimensions
+                     :array-likes array-likes
+                     :dimensions (mapcar #'dimensions array-likes)))))))
+
+(macrolet ((def (name reduce-fn)
+             `(define-splice-list-fn ,name (array-likes &key out)
+                ;; TODO: Incorporate WHERE (?)
+                (multiple-value-bind (array-likes out)
+                    (normalize-arguments/cmp array-likes out)
+                  (reduce (lambda (old-out new-value)
+                            (,reduce-fn old-out new-value :out out))
+                          (rest array-likes)
+                          :initial-value (first array-likes))))))
+  (def dn:<  dn:two-arg-<)
+  (def dn:<= dn:two-arg-<=)
+  (def dn:=  dn:two-arg-=)
+  (def dn:/= dn:two-arg-/=)
+  (def dn:>  dn:two-arg->)
+  (def dn:>= dn:two-arg->=))
