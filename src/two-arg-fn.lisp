@@ -65,23 +65,25 @@
 
 
 
-     ;; single-float - 3 polymorphs
+     ;; single-float - 4 polymorphs
 
      (defpolymorph ,name ((,first-arg (array single-float)) (,second-arg number)
                           &key ((out (array ,single-float-return-type))
                                 (zeros (narray-dimensions ,first-arg)
                                        :type ',single-float-return-type)))
          (array ,single-float-return-type)
-       ;; TODO: Handle broadcasting
        ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (cffi:with-foreign-pointer (ptr-y 4)
-         (setf (cffi:mem-ref ptr-y :float) (coerce ,second-arg 'single-float))
-         (ptr-iterate-but-inner n ((ptr-x 4                                 ix ,first-arg)
-                                   (ptr-o ,single-float-return-element-size io out))
-                                (,single-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y 0
-                                                      ptr-o io)))
+       (with-thresholded-multithreading (array-total-size
+                                         (the (array ,single-float-return-type) out))
+           (,first-arg out)
+         (cffi:with-foreign-pointer (ptr-y 4)
+           (setf (cffi:mem-ref ptr-y :float) (coerce ,second-arg 'single-float))
+           (ptr-iterate-but-inner n ((ptr-x 4                                 ix ,first-arg)
+                                     (ptr-o ,single-float-return-element-size io out))
+             (,single-float-c-name n
+                                   ptr-x ix
+                                   ptr-y 0
+                                   ptr-o io))))
        out)
 
      (defpolymorph (,name :inline t)
@@ -93,32 +95,75 @@
        (,name ,second-arg ,first-arg :out out)
        out)
 
-
      (defpolymorph ,name ((,first-arg (array single-float)) (,second-arg (array single-float))
                           &key ((out (or null (array ,single-float-return-type)))))
          (array ,single-float-return-type)
        ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
-           (broadcast-compatible-p ,first-arg ,second-arg)
-         (assert broadcast-compatible-p (,first-arg ,second-arg)
-                 'incompatible-broadcast-dimensions
-                 :dimensions (mapcar #'narray-dimensions (list ,first-arg ,second-arg))
-                 :array-likes (list ,first-arg ,second-arg))
-         (setq ,first-arg  (broadcast-array ,first-arg broadcast-dimensions))
-         (setq ,second-arg (broadcast-array ,second-arg broadcast-dimensions))
-         (setq out (or out (zeros broadcast-dimensions :type ',single-float-return-type)))
+       (unless (and out
+                    (equalp (narray-dimensions ,first-arg)
+                            (narray-dimensions ,second-arg)))
+         (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
+             (broadcast-compatible-p ,first-arg ,second-arg)
+           (assert broadcast-compatible-p (,first-arg ,second-arg)
+                   'incompatible-broadcast-dimensions
+                   :dimensions (mapcar #'narray-dimensions (list ,first-arg ,second-arg))
+                   :array-likes (list ,first-arg ,second-arg))
+           (setq ,first-arg  (broadcast-array ,first-arg broadcast-dimensions))
+           (setq ,second-arg (broadcast-array ,second-arg broadcast-dimensions))
+           (setq out (or out (zeros broadcast-dimensions :type ',single-float-return-type)))))
+       (with-thresholded-multithreading (array-total-size
+                                         (the (array ,single-float-return-type) out))
+           (,first-arg ,second-arg out)
          (ptr-iterate-but-inner n ((ptr-x 4                                 ix ,first-arg)
                                    (ptr-y 4                                 iy ,second-arg)
                                    (ptr-o ,single-float-return-element-size io out))
-                                (,single-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y iy
-                                                      ptr-o io)))
+           (,single-float-c-name n
+                                 ptr-x ix
+                                 ptr-y iy
+                                 ptr-o io)))
+       out)
+
+     (defpolymorph (,name :inline t)
+         ((,first-arg (simple-array single-float))
+          (,second-arg (simple-array single-float))
+          &key ((out (or null (simple-array ,single-float-return-type)))))
+         (array ,single-float-return-type)
+       ;; TODO: Handle cases reducible to exp2, exp and exp10
+       (if (and out
+                (equalp (narray-dimensions ,first-arg)
+                        (narray-dimensions ,second-arg))
+                (equalp (narray-dimensions out)
+                        (narray-dimensions ,second-arg)))
+           (with-thresholded-multithreading (array-total-size (the array out))
+               (:simple ,first-arg ,second-arg out)
+             (,single-float-c-name (array-total-size (the array out))
+                                   (ptr ,first-arg 4) 1
+                                   (ptr ,second-arg 4) 1
+                                   (ptr out 4) 1))
+           (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
+               (broadcast-compatible-p ,first-arg ,second-arg)
+             (assert broadcast-compatible-p (,first-arg ,second-arg)
+                     'incompatible-broadcast-dimensions
+                     :dimensions (mapcar #'narray-dimensions (list ,first-arg ,second-arg))
+                     :array-likes (list ,first-arg ,second-arg))
+             (setq ,first-arg  (broadcast-array ,first-arg broadcast-dimensions))
+             (setq ,second-arg (broadcast-array ,second-arg broadcast-dimensions))
+             (setq out (or out (zeros broadcast-dimensions :type ',single-float-return-type)))
+             (with-thresholded-multithreading (array-total-size
+                                               (the (array ,single-float-return-type) out))
+                 (,first-arg ,second-arg out)
+               (ptr-iterate-but-inner n ((ptr-x 4                                 ix ,first-arg)
+                                         (ptr-y 4                                 iy ,second-arg)
+                                         (ptr-o ,single-float-return-element-size io out))
+                 (,single-float-c-name n
+                                       ptr-x ix
+                                       ptr-y iy
+                                       ptr-o io)))))
        out)
 
 
 
-     ;; double-float - 3 polymorphs
+     ;; double-float - 4 polymorphs
 
      (defpolymorph ,name ((,first-arg (array double-float)) (,second-arg number)
                           &key ((out (array ,double-float-return-type))
@@ -126,14 +171,17 @@
                                        :type ',double-float-return-type)))
          (array ,double-float-return-type)
        ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (cffi:with-foreign-pointer (ptr-y 8)
-         (setf (cffi:mem-ref ptr-y :double) (coerce ,second-arg 'double-float))
-         (ptr-iterate-but-inner n ((ptr-x 8                                 ix ,first-arg)
-                                   (ptr-o ,double-float-return-element-size io out))
-                                (,double-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y 0
-                                                      ptr-o io)))
+       (with-thresholded-multithreading (array-total-size
+                                         (the (array ,double-float-return-type) out))
+           (,first-arg out)
+         (cffi:with-foreign-pointer (ptr-y 8)
+           (setf (cffi:mem-ref ptr-y :double) (coerce ,second-arg 'double-float))
+           (ptr-iterate-but-inner n ((ptr-x 8                                 ix ,first-arg)
+                                     (ptr-o ,double-float-return-element-size io out))
+             (,double-float-c-name n
+                                   ptr-x ix
+                                   ptr-y 0
+                                   ptr-o io))))
        out)
 
      (defpolymorph (,name :inline t)
@@ -150,22 +198,66 @@
                                 (zeros-like ,first-arg)))
          (array ,double-float-return-type)
        ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
-           (broadcast-compatible-p ,first-arg ,second-arg)
-         (assert broadcast-compatible-p (,first-arg ,second-arg)
-                 'incompatible-broadcast-dimensions
-                 :dimensions (mapcar #'narray-dimensions (list ,first-arg ,second-arg))
-                 :array-likes (list ,first-arg ,second-arg))
-         (setq ,first-arg  (broadcast-array ,first-arg broadcast-dimensions))
-         (setq ,second-arg (broadcast-array ,second-arg broadcast-dimensions))
-         (setq out (or out (zeros broadcast-dimensions :type ',double-float-return-type)))
+       (unless (and out
+                    (equalp (narray-dimensions ,first-arg)
+                            (narray-dimensions ,second-arg)))
+         (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
+             (broadcast-compatible-p ,first-arg ,second-arg)
+           (assert broadcast-compatible-p (,first-arg ,second-arg)
+                   'incompatible-broadcast-dimensions
+                   :dimensions (mapcar #'narray-dimensions (list ,first-arg ,second-arg))
+                   :array-likes (list ,first-arg ,second-arg))
+           (setq ,first-arg  (broadcast-array ,first-arg broadcast-dimensions))
+           (setq ,second-arg (broadcast-array ,second-arg broadcast-dimensions))
+           (setq out (or out (zeros broadcast-dimensions :type ',double-float-return-type)))))
+       (with-thresholded-multithreading (array-total-size
+                                         (the (array ,double-float-return-type) out))
+           (,first-arg ,second-arg out)
          (ptr-iterate-but-inner n ((ptr-x 8                                 ix ,first-arg)
                                    (ptr-y 8                                 iy ,second-arg)
                                    (ptr-o ,double-float-return-element-size io out))
-                                (,double-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y iy
-                                                      ptr-o io)))
+                (,double-float-c-name n
+                                      ptr-x ix
+                                      ptr-y iy
+                                      ptr-o io)))
+       out)
+
+     (defpolymorph (,name :inline t)
+         ((,first-arg (simple-array double-float))
+          (,second-arg (simple-array double-float))
+          &key ((out (or null (simple-array ,double-float-return-type)))))
+         (array ,double-float-return-type)
+       ;; TODO: Handle cases reducible to exp2, exp and exp10
+       (if (and out
+                (equalp (narray-dimensions ,first-arg)
+                        (narray-dimensions ,second-arg))
+                (equalp (narray-dimensions out)
+                        (narray-dimensions ,second-arg)))
+           (with-thresholded-multithreading (array-total-size (the array out))
+               (:simple ,first-arg ,second-arg out)
+             (,double-float-c-name (array-total-size (the array out))
+                                   (ptr ,first-arg 8) 1
+                                   (ptr ,second-arg 8) 1
+                                   (ptr out 8) 1))
+           (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
+               (broadcast-compatible-p ,first-arg ,second-arg)
+             (assert broadcast-compatible-p (,first-arg ,second-arg)
+                     'incompatible-broadcast-dimensions
+                     :dimensions (mapcar #'narray-dimensions (list ,first-arg ,second-arg))
+                     :array-likes (list ,first-arg ,second-arg))
+             (setq ,first-arg  (broadcast-array ,first-arg broadcast-dimensions))
+             (setq ,second-arg (broadcast-array ,second-arg broadcast-dimensions))
+             (setq out (or out (zeros broadcast-dimensions :type ',double-float-return-type)))
+             (with-thresholded-multithreading (array-total-size
+                                               (the (array ,double-float-return-type) out))
+                 (,first-arg ,second-arg out)
+               (ptr-iterate-but-inner n ((ptr-x 8                                 ix ,first-arg)
+                                         (ptr-y 8                                 iy ,second-arg)
+                                         (ptr-o ,double-float-return-element-size io out))
+                 (,double-float-c-name n
+                                       ptr-x ix
+                                       ptr-y iy
+                                       ptr-o io)))))
        out)))
 
 
@@ -173,7 +265,7 @@
                  (single-float-c-name single-float-error
                   &optional (sf-min 0.0f0) (sf-max 1.0f0))
                  (double-float-c-name double-float-error
-                  &optional (df-min 0.0d0) (df-max 1.0d0)))
+                   &optional (df-min 0.0d0) (df-max 1.0d0)))
              (eval `(define-polymorphic-function ,name (,first-arg ,second-arg &key out)
                       :overwrite t))
              `(progn

@@ -54,5 +54,6 @@
                        (zeros (narray-dimensions a) :type 'double-float))))
 
 (trivial-coerce:define-coercion (a :from (array double-float) :to (array single-float))
-  (dn:copy a :out (zeros (narray-dimensions a) :type 'single-float)))
+  (dn:copy a :out (the (array single-float)
+                       (zeros (narray-dimensions a) :type 'single-float))))
 

@@ -1,16 +1,6 @@
 (in-package :dense-numericals.impl)
 
-(declaim (inline ptr))
-(declaim (ftype (function * cffi-sys::foreign-pointer) ptr))
-(defun ptr (array)
-  (declare (optimize speed))
-  (cffi:make-pointer (the fixnum
-                          (+ (the fixnum
-                                  (static-vectors::static-vector-address
-                                   (array-displaced-to array)))
-                             static-vectors::+array-header-size+))))
-
-(defmacro ptr-iterate-but-inner (n-var bindings expression)
+(defmacro ptr-iterate-but-inner (n-var &body (bindings . expression))
   "Each bindings is of the form (PTR-VAR ELT-SIZE INNER-STRIDE-VAR ARRAY-EXPR)."
 
   (let* ((pointers      (mapcar #'first  bindings))
@@ -51,7 +41,7 @@
                                             `(cffi:incf-pointer
                                                  ,ptr (the-int-index (* ,elt-size ,o))))
                                         pointers os elt-sizes)
-                              ,expression
+                              ,@expression
                               ,@(mapcar (lm ptr o elt-size
                                             `(cffi:incf-pointer
                                                  ,ptr (the-int-index
