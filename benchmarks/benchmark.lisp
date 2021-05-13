@@ -91,5 +91,16 @@
 
              (one-arg-fn '(dn:asinh   dn:acosh   dn:atanh)
                          '(np.arcsinh np.arccosh np.arctanh)
-                         '( t.arcsinh  t.arccosh  t.arctanh))))
+                         '( t.arcsinh  t.arccosh  t.arctanh))
+
+             ;; (two-arg-fn '(dn:expt  dn:atan)
+             ;;             '(np.power np.arctan2)
+             ;;             '( t.pow    t.atan2))
+
+             ;; (two-arg-fn '(dn:atan)
+             ;;             '(np.arctan2)
+             ;;             '(t.atan2))
+             (two-arg-fn '(dn:expt)
+                         '(np.power)
+                         '( t.pow))))
       (return-from benchmark (values-list reports)))))
