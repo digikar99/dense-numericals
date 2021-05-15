@@ -22,7 +22,6 @@ def numpy_two_arg_fn(fn, a_sizes, b_sizes, o_sizes, num_operations, elt_type):
   return tuple(timings)
 ")
 
-  #-arm64
   (pyexec "
 def torch_two_arg_fn(fn, a_sizes, b_sizes, o_sizes, num_operations, elt_type):
   import time
