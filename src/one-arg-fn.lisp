@@ -146,7 +146,7 @@
   (def dn:atanh (c:dn-satanh 2f-7) (c:dn-datanh 1d-15))
 
   (def dn:exp (c:dn-sexp 2f-7) (c:dn-dexp 1d-15))
-  (def dn:sqrt (c:dn-ssqrt 2f-7) (c:dn-dsqrt 1d-15))
+  ;; (def dn:sqrt (c:dn-ssqrt 2f-7) (c:dn-dsqrt 1d-15))
   (def dn:abs (c:dn-sfabs 0.0f0) (c:dn-dfabs 0.0f0)))
 
 ;; Handle atan case specially
