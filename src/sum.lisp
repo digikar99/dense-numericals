@@ -1,5 +1,5 @@
 (in-package :dense-numericals.impl)
-(5am:in-suite :dense-numericals)
+(5am:in-suite array)
 
 ;;; numpy is still about a factor 2 fast for large arrays, perhaps because
 ;;; it might not be using dot under the hood

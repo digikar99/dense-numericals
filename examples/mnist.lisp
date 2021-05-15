@@ -200,31 +200,15 @@
                                              y-true)))
 
              ;; Back-propagate
-             ;; (if (or (in outer (first-iteration-p))
-             ;;         (cl:< loss p-loss))
-             ;;     (two-arg-+ weights
-             ;;                (two-arg-* (cl:/ *learning-rate* num-images)
-             ;;                           (two-arg-matmul (copy (transpose x-holder)
-             ;;                                                 :out x-holder^t)
-             ;;                                           (two-arg-- y-true
-             ;;                                                      softmax-y-holder
-             ;;                                                      :out softmax-y-holder)
-             ;;                                           :out grad))
-             ;;                :out weights)
-             ;;     (progn
-             ;;       (setq *learning-rate* (print (cl:/ *learning-rate* 2)))
-             ;;       (setq loss p-loss)
-             ;;       (terminate)))
-
              (two-arg-+ weights
-                            (two-arg-* (cl:/ *learning-rate* num-images)
-                                       (two-arg-matmul (copy (transpose x-holder)
-                                                             :out x-holder^t)
-                                                       (two-arg-- y-true
-                                                                  softmax-y-holder
-                                                                  :out softmax-y-holder)
-                                                       :out grad))
-                            :out weights))
+                        (two-arg-* (cl:/ *learning-rate* num-images)
+                                   (two-arg-matmul (copy (transpose x-holder)
+                                                         :out x-holder^t)
+                                                   (two-arg-- y-true
+                                                              softmax-y-holder
+                                                              :out softmax-y-holder)
+                                                   :out grad))
+                        :out weights))
 
            
 

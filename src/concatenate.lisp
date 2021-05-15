@@ -45,7 +45,7 @@ will be concatenated.
 - AXIS defaulting to 0
 - OUT defaulting to NIL"
   (declare (type size axis))
-  (let* ((array-args (mapcar #'ensure-dense-array args))
+  (let* ((array-args (mapcar #'ensure-appropriate-dense-array args))
          (dimensions (mapcar #'narray-dimensions array-args)))
     (multiple-value-bind (concatenate-compatible-p result-dimensions)
         (apply #'concatenate-compatible-p axis dimensions)

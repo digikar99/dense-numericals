@@ -58,7 +58,7 @@
                               :initial-value (first array-likes))
                       (,invert-fn (first array-likes)))))))
   (def dn:- dn:two-arg-- dn:one-arg--)
-  (def dn:/ dn:two-arg-- dn:one-arg-/))
+  (def dn:/ dn:two-arg-/ dn:one-arg-/))
 
 
 (defun normalize-arguments/cmp (array-likes out)
