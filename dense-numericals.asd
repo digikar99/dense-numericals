@@ -58,7 +58,8 @@
   :perform (test-op (o c)
                     (declare (ignore o c))
                     ;; Or should we use STATIC?
-                    (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-BACKEND* :CL))
+                    (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-CLASS*
+                                                'DENSE-ARRAYS:STANDARD-DENSE-ARRAY))
                                         (5AM:RUN 'DENSE-NUMERICALS.IMPL::ARRAY))"))))
 
 (defsystem "dense-numericals/benchmarks"
@@ -76,7 +77,8 @@
   :perform (test-op (o c)
              (declare (ignore o c))
              ;; Or should we use STATIC?
-             (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-BACKEND* :CL))
+             (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-CLASS*
+                                                'DENSE-ARRAYS:STANDARD-DENSE-ARRAY))
                                         (5AM:RUN :DENSE-NUMERICALS/BENCHMARKS))"))))
 
 (defsystem "dense-numericals/examples"
