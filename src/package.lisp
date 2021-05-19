@@ -101,10 +101,7 @@
 
 (in-package :dense-numericals.impl)
 
-(loop :for (nick package) :in '((:dn       :dense-numericals)
-                                (:c        :dense-numericals.c)
-                                (:linalg.c :dense-numericals.linalg.c)
-                                (:linalg   :dense-numericals.linalg))
+(loop :for (nick package) :in '((:dn    :dense-numericals))
       :do (trivial-package-local-nicknames:add-package-local-nickname nick package))
 
 (defvar *src-dir* (asdf:component-pathname (asdf:find-system "dense-numericals")))

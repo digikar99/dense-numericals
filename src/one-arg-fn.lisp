@@ -1,8 +1,5 @@
 (in-package :dense-numericals.impl)
 
-(cffi:load-foreign-library (cl:merge-pathnames #P"../c-src/libdense-numericals.so"
-                                               *src-dir*))
-
 (5am:def-suite* array :in :dense-numericals)
 
 ;; Basic Concept:
@@ -129,29 +126,29 @@
                 (define-numericals-one-arg-test ,name array
                     (,single-float-error ,sf-min ,sf-max)
                     (,double-float-error ,df-min ,df-max)))))
-  (def dn:sin (c:dn-ssin 2f-7) (c:dn-dsin 1d-15))
-  (def dn:cos (c:dn-scos 2f-7) (c:dn-dcos 1d-15))
-  (def dn:tan (c:dn-stan 2f-7) (c:dn-dtan 1d-15))
+  (def dn:sin (bmas:ssin 2f-7) (bmas:dsin 1d-15))
+  (def dn:cos (bmas:scos 2f-7) (bmas:dcos 1d-15))
+  (def dn:tan (bmas:stan 2f-7) (bmas:dtan 1d-15))
 
-  (def dn:asin (c:dn-sasin 2f-7) (c:dn-dasin 1d-15))
-  (def dn:acos (c:dn-sacos 2f-7) (c:dn-dacos 1d-15))
-  ;; (def dn:atan (c:dn-satan 2f-7) (c:dn-datan 1d-15)) ; Handle atan case specially
+  (def dn:asin (bmas:sasin 2f-7) (bmas:dasin 1d-15))
+  (def dn:acos (bmas:sacos 2f-7) (bmas:dacos 1d-15))
+  ;; (def dn:atan (bmas:satan 2f-7) (bmas:datan 1d-15)) ; Handle atan case specially
 
-  (def dn:sinh (c:dn-ssinh 2f-7) (c:dn-dsinh 1d-15))
-  (def dn:cosh (c:dn-scosh 2f-7) (c:dn-dcosh 1d-15))
-  (def dn:tanh (c:dn-stanh 2f-7) (c:dn-dtanh 1d-15))
+  (def dn:sinh (bmas:ssinh 2f-7) (bmas:dsinh 1d-15))
+  (def dn:cosh (bmas:scosh 2f-7) (bmas:dcosh 1d-15))
+  (def dn:tanh (bmas:stanh 2f-7) (bmas:dtanh 1d-15))
 
-  (def dn:asinh (c:dn-sasinh 2f-7) (c:dn-dasinh 1d-15))
-  (def dn:acosh (c:dn-sacosh 2f-7 1.0f0 2.0f0) (c:dn-dacosh 1d-15 1.0d0 2.0d0))
-  (def dn:atanh (c:dn-satanh 2f-7) (c:dn-datanh 1d-15))
+  (def dn:asinh (bmas:sasinh 2f-7) (bmas:dasinh 1d-15))
+  (def dn:acosh (bmas:sacosh 2f-7 1.0f0 2.0f0) (bmas:dacosh 1d-15 1.0d0 2.0d0))
+  (def dn:atanh (bmas:satanh 2f-7) (bmas:datanh 1d-15))
 
-  (def dn:exp (c:dn-sexp 2f-7) (c:dn-dexp 1d-15))
-  ;; (def dn:sqrt (c:dn-ssqrt 2f-7) (c:dn-dsqrt 1d-15))
-  (def dn:abs (c:dn-sfabs 0.0f0) (c:dn-dfabs 0.0f0)))
+  (def dn:exp (bmas:sexp 2f-7) (bmas:dexp 1d-15))
+  ;; (def dn:sqrt (bmas:ssqrt 2f-7) (bmas:dsqrt 1d-15))
+  (def dn:abs (bmas:sfabs 0.0f0) (bmas:dfabs 0.0f0)))
 
 ;; Handle atan case specially
 (define-polymorphic-function dn:atan (x &rest args) :overwrite t)
-(define-one-arg-functions dn:atan c:dn-satan c:dn-datan)
+(define-one-arg-functions dn:atan bmas:satan bmas:datan)
 (define-numericals-one-arg-test dn:atan array (2f-7) (1d-15))
 
 
@@ -164,11 +161,11 @@
                 (define-one-arg-functions ,name ,single-float-c-name ,double-float-c-name)
                 (define-numericals-one-arg-test ,name array
                     (,single-float-error) (,double-float-error)))))
-  (def dn:log (c:dn-slog 2f-7) (c:dn-dlog 1d-15))
-  (def dn:fround (c:dn-sround 0.0f0) (c:dn-dround 0.0d0))
-  (def dn:ftruncate (c:dn-strunc 0.0f0) (c:dn-dtrunc 0.0d0))
-  (def dn:ffloor (c:dn-sfloor 0.0f0) (c:dn-dfloor 0.0d0))
-  (def dn:fceiling (c:dn-sceil 0.0f0) (c:dn-dceil 0.0d0)))
+  (def dn:log (bmas:slog 2f-7) (bmas:dlog 1d-15))
+  (def dn:fround (bmas:sround 0.0f0) (bmas:dround 0.0d0))
+  (def dn:ftruncate (bmas:strunc 0.0f0) (bmas:dtrunc 0.0d0))
+  (def dn:ffloor (bmas:sfloor 0.0f0) (bmas:dfloor 0.0d0))
+  (def dn:fceiling (bmas:sceil 0.0f0) (bmas:dceil 0.0d0)))
 
 (macrolet ((def (name op)
              `(progn

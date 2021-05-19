@@ -2,7 +2,7 @@
 (5am:in-suite :dense-numericals)
 
 ;; Basic Concept:
-;; (c:dn-ssin (array-total-size x) (ptr x) 1 (ptr out) 1)
+;; (bmas:bmas-ssin (array-total-size x) (ptr x) 1 (ptr out) 1)
 
 (declaim (inline broadcast-zeros))
 (defun broadcast-zeros (a b element-type)
@@ -280,11 +280,11 @@
                     (,double-float-error ,df-min ,df-max double-float)))))
 
   (def dn:expt cl:expt (base power)
-    (c:dn-spow 2f-7)
-    (c:dn-dpow 1d-15)))
+    (bmas:spow 2f-7)
+    (bmas:dpow 1d-15)))
 
 (define-two-arg-functions dn:atan cl:atan
-    (x y) (c:dn-satan2 single-float) (c:dn-datan2 double-float))
+    (x y) (bmas:satan2 single-float) (bmas:datan2 double-float))
 
 ;; (define-numericals-two-arg-test dn:atan array
 ;;     (2f-7  0.0f0 1.0f0 single-float)

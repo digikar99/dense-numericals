@@ -13,7 +13,7 @@
                           (narray-dimensions out))))
     (ptr-iterate-but-inner n ((ptr-x 4 ix x)
                               (ptr-o 8 iout out))
-                           (c:dn-cast-sd n ptr-x ix ptr-o iout)))
+                           (bmas:cast-sd n ptr-x ix ptr-o iout)))
   out)
 
 (defpolymorph dn:copy ((x (array double-float)) &key ((out (array single-float))))
@@ -23,7 +23,7 @@
                           (narray-dimensions out))))
     (ptr-iterate-but-inner n ((ptr-x 8 ix x)
                               (ptr-o 4 iout out))
-                           (c:dn-cast-ds n ptr-x ix ptr-o iout)))
+                           (bmas:cast-ds n ptr-x ix ptr-o iout)))
   out)
 
 (5am:def-test dn:copy ()

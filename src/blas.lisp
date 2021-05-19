@@ -2,13 +2,6 @@
 
 (5am:in-suite array)
 
-;; The first is slower on the author's PC :/ - 10 times as slower as numpy
-;; (cffi:load-foreign-library #p"/usr/lib/x86_64-linux-gnu/libblas.so")
-;; The second is fast, much faster :D - at par with numpy
-(cffi:load-foreign-library #+x86-64 #p"/usr/lib/x86_64-linux-gnu/libopenblas.so.0"
-                           #+arm64 #p"/usr/lib/aarch64-linux-gnu/libopenblas.so")
-;; The miniconda equivalents aren't faster than this for DN:SUM below
-
 (define-polymorphic-function dn:copy (x &key out))
 
 (defpolymorph dn:copy
@@ -20,7 +13,7 @@
                           (narray-dimensions out))))
     (ptr-iterate-but-inner n ((ptr-x 4 ix x)
                               (ptr-o 4 iout out))
-                           (linalg.c:cblas-scopy n ptr-x ix ptr-o iout)))
+      (cblas:cblas-scopy n ptr-x ix ptr-o iout)))
   out)
 
 (defpolymorph dn:copy
@@ -32,7 +25,7 @@
                           (narray-dimensions out))))
     (ptr-iterate-but-inner n ((ptr-x 8 ix x)
                               (ptr-o 8 iout out))
-                           (linalg.c:cblas-dcopy n ptr-x ix ptr-o iout)))
+      (cblas:cblas-dcopy n ptr-x ix ptr-o iout)))
   out)
 
 ;; (let ((a (asarray '((1 2 3))))
@@ -62,13 +55,13 @@
                   (policy-cond:with-expectations (= 0 safety)
                       ((assertion (matmul-compatible-arrays a b out) (a b out)))
                     ;; We do C^T = (B^T A^T) - since we are unable
-                    ;; to obtain the result with linalg.c:+cblas-row-major+ :/
+                    ;; to obtain the result with cblas:+cblas-row-major+ :/
                     (let ((m (array-dimension b 1))
                           (k (array-dimension b 0))
                           (n (array-dimension a 0)))
-                      (,c-fn linalg.c:+cblas-col-major+
-                             linalg.c:+cblas-no-trans+
-                             linalg.c:+cblas-no-trans+
+                      (,c-fn cblas:+cblas-col-major+
+                             cblas:+cblas-no-trans+
+                             cblas:+cblas-no-trans+
                              m n k
                              (coerce 1 ',element-type)
                              (ptr b) m
@@ -77,8 +70,8 @@
                              (ptr out) m))))
                 out)))
 
-  (def single-float linalg.c:cblas-sgemm)
-  (def double-float linalg.c:cblas-dgemm))
+  (def single-float cblas:cblas-sgemm)
+  (def double-float cblas:cblas-dgemm))
 
 (5am:def-test dn:two-arg-matmul ()
   (loop :for *array-element-type* :in '(single-float double-float)
@@ -122,9 +115,9 @@
   (let ((sum 0.0f0))
     (ptr-iterate-but-inner n ((ptr-a 4 inc-a a)
                               (ptr-b 4 inc-b b))
-                           (incf sum (linalg.c:cblas-sdot n
-                                                          ptr-a inc-a
-                                                          ptr-b inc-b)))
+      (incf sum (cblas:cblas-sdot n
+                                  ptr-a inc-a
+                                  ptr-b inc-b)))
     sum))
 
 (defpolymorph dn:dot ((a (simple-array single-float 1))
@@ -133,6 +126,6 @@
     t
   (declare (ignore out))
   ;; TODO: Generalize this to more dimensions
-  (linalg.c:cblas-sdot (array-total-size a)
-                       (ptr a) 1
-                       (ptr b) 1))
+  (cblas:cblas-sdot (array-total-size a)
+                    (ptr a) 1
+                    (ptr b) 1))

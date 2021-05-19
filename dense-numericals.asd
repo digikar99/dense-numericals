@@ -1,23 +1,9 @@
-(defsystem "dense-numericals/cblas"
-  :pathname "src/"
-  :depends-on ("uiop"
-               "cffi"
-               "cl-autowrap")
-  :components ((:file "linalg")))
-
-(defsystem "dense-numericals/c"
-  :pathname "src/"
-  :depends-on ("uiop"
-               "cffi"
-               "cl-autowrap")
-  :components ((:file "spec")))
-
 (defsystem "dense-numericals"
   :pathname "src/"
   :version "0.1.0"
   :depends-on ("dense-arrays-plus-lite"
-               "dense-numericals/cblas"
-               "dense-numericals/c"
+               "cblas"
+               "bmas"
                "cl-autowrap"
                "alexandria"
                "iterate"

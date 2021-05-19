@@ -23,10 +23,10 @@
                       (setf (cffi:mem-aref ones ,ctype)
                             (coerce 1 ',type))
                       (ptr-iterate-but-inner n ((ptr-x ,type-size inc-x x))
-                                             (incf sum
-                                                   (,c-fn n
-                                                          ptr-x 1
-                                                          ones 0))))
+                        (incf sum
+                              (,c-fn n
+                                     ptr-x 1
+                                     ones 0))))
                     sum))
 
                 (defpolymorph dn:sum ((x (array ,type 1))
@@ -60,8 +60,8 @@
                                     stride)))
                   out))))
 
-  (def single-float linalg.c:cblas-sdot 4 :float)
-  (def double-float linalg.c:cblas-ddot 8 :double))
+  (def single-float cblas:cblas-sdot 4 :float)
+  (def double-float cblas:cblas-ddot 8 :double))
 
 
 
@@ -106,7 +106,7 @@
 ;;   (declare (ignore axes out))
 ;;   (cffi:with-foreign-pointer (ones 4)
 ;;     (setf (cffi:mem-aref ones :float) 1.0f0)
-;;     (linalg.c:cblas-sdot (array-total-size x)
+;;     (cblas:cblas-sdot (array-total-size x)
 ;;                          (ptr x) 1
 ;;                          ones 0)))
 
