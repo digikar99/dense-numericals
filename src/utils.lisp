@@ -7,6 +7,7 @@
 
 (declaim (inline ptr))
 (declaim (ftype (function * cffi-sys::foreign-pointer) ptr))
+
 #+sbcl
 (defun ptr (array &optional (elt-size 1 elt-size-p))
   (declare (optimize speed)
@@ -26,11 +27,20 @@
                                             :do (incf sum o)
                                             :finally (return sum))))
                                   0))))))
+
 #-sbcl
-(defun ptr (array)
+(defun ptr (array &optional (elt-size 1 elt-size-p))
   (declare (optimize speed)
            (type array array))
-  (static-vectors:static-vector-pointer (array-storage array)))
+  (cffi:inc-pointer (static-vectors:static-vector-pointer (array-storage array))
+                    (the-size (if elt-size-p
+                                  (* elt-size
+                                     (the-size
+                                      (loop :for o :of-type size :in (array-offsets array)
+                                            :with sum :of-type size := 0
+                                            :do (incf sum o)
+                                            :finally (return sum))))
+                                  0))))
 
 
 
