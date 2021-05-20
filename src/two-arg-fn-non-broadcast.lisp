@@ -2,239 +2,355 @@
 
 ;;; We let the n-arg version handle the broadcasting
 
-(defmacro define-two-arg-functions/non-broadcast
+(define-polymorphic-function two-arg-fn/non-broadcast
+    (name x y &key out)
+  :overwrite t)
 
-    (name cl-name
-     (first-arg second-arg)
-     (single-float-c-name single-float-return-type
-      &optional (single-float-return-element-size 4))
-     (double-float-c-name double-float-return-type
-      &optional (double-float-return-element-size 8)))
-  
-  `(progn
+(deftype comparison-operator ()
+  `(member cl:< cl:= cl:<= cl:/= cl:>= cl:>
+           dn:< dn:= dn:<= dn:/= dn:>= dn:>
+           dn:two-arg-<  dn:two-arg-<= dn:two-arg-=
+           dn:two-arg-/= dn:two-arg->= dn:two-arg->))
+(deftype non-comparison-operator ()
+  `(and symbol (not comparison-operator)))
 
-     ;; Pure number
-     (defpolymorph ,name ((,first-arg number) (,second-arg number) &key ((out null) nil))
-         number
-       (declare (ignore out))
-       ,(if (member cl-name '(cl:< cl:= cl:<= cl:/= cl:>= cl:>))
-            `(if (,cl-name ,first-arg ,second-arg)
-                 1
-                 0)
-            `(,cl-name ,first-arg ,second-arg)))
+;; Pure number
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator)
+     (x number) (y number) &key ((out null) nil))
+    (values number &optional)
+  (declare (ignore out))
+  (let ((cl-name (cl-name name)))
+    (funcall cl-name x y)))
 
-
-     ;; list - 3x2 polymorphs: we do need the two variants
-     ;;   because below, the OUT is initialized in the lambda-list itself
-     (defpolymorph (,name :inline t)
-         ((,first-arg list) (,second-arg list) &key ((out array)))
-         (values array &optional)
-       (,name (asarray ,first-arg) (asarray ,second-arg) :out out))
-     (defpolymorph (,name :inline t)
-         ((,first-arg number) (,second-arg list) &key ((out array)))
-         (values array &optional)
-       (,name ,first-arg (asarray ,second-arg) :out out))
-     (defpolymorph (,name :inline t)
-         ((,first-arg list) (,second-arg number) &key ((out array)))
-         (values array &optional)
-       (,name (asarray ,first-arg) ,second-arg :out out))
-
-     (defpolymorph (,name :inline t)
-         ((,first-arg list) (,second-arg list) &key ((out null)))
-         (values array &optional)
-       (declare (ignore out))
-       (,name (asarray ,first-arg) (asarray ,second-arg)))
-     (defpolymorph (,name :inline t)
-         ((,first-arg number) (,second-arg list) &key ((out null)))
-         (values array &optional)
-       (declare (ignore out))
-       (,name ,first-arg (asarray ,second-arg)))
-     (defpolymorph (,name :inline t)
-         ((,first-arg list) (,second-arg number) &key ((out null)))
-         (values array &optional)
-       (declare (ignore out))
-       (,name (asarray ,first-arg) ,second-arg))
-     
-
-     
-     ;; single-float - 4 polymorphs
-
-     (defpolymorph ,name ((,first-arg (array single-float)) (,second-arg number)
-                          &key ((out (array ,single-float-return-type))
-                                (zeros (narray-dimensions ,first-arg)
-                                       :type ',single-float-return-type)))
-         (array ,single-float-return-type)
-       ;; TODO: Handle broadcasting
-       ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (cffi:with-foreign-pointer (ptr-y 4)
-         (setf (cffi:mem-ref ptr-y :float) (coerce ,second-arg 'single-float))
-         (ptr-iterate-but-inner n ((ptr-x 4                                 ix ,first-arg)
-                                   (ptr-o ,single-float-return-element-size io out))
-                                (,single-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y 0
-                                                      ptr-o io)))
-       out)
-
-     (defpolymorph (,name :inline t)
-         ((,first-arg number) (,second-arg (array single-float))
-          &key ((out (array ,single-float-return-type))
-                (zeros (narray-dimensions ,second-arg)
-                       :type ',single-float-return-type)))
-         (array ,single-float-return-type)
-       (,name ,second-arg ,first-arg :out out)
-       out)
-     
-     
-     (defpolymorph ,name ((,first-arg (array single-float)) (,second-arg (array single-float))
-                          &key ((out (array ,single-float-return-type))
-                                (zeros (narray-dimensions ,first-arg)
-                                       :type ',single-float-return-type)))
-         (array ,single-float-return-type)
-       ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (policy-cond:with-expectations (= safety 0)
-           ((assertion (equalp (narray-dimensions ,first-arg)
-                               (narray-dimensions ,second-arg))))
-         (ptr-iterate-but-inner n ((ptr-x 4                                 ix ,first-arg)
-                                   (ptr-y 4                                 iy ,second-arg)
-                                   (ptr-o ,single-float-return-element-size io out))
-                                (,single-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y iy
-                                                      ptr-o io)))
-       out)
-
-     (defpolymorph ,name ((,first-arg (simple-array single-float))
-                          (,second-arg (simple-array single-float))
-                          &key ((out (simple-array ,single-float-return-type))
-                                (zeros (narray-dimensions ,first-arg)
-                                       :type ',single-float-return-type)))
-         (simple-array ,single-float-return-type)
-       ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (policy-cond:with-expectations (= safety 0)
-           ((assertion (equalp (narray-dimensions ,first-arg)
-                               (narray-dimensions ,second-arg))))
-         (let ((ptr-x (ptr ,first-arg))
-               (ptr-y (ptr ,second-arg))
-               (ptr-o (ptr out))
-               (n     (array-total-size ,first-arg)))
-           (,single-float-c-name n
-                                 ptr-x 1
-                                 ptr-y 1
-                                 ptr-o 1)))
-       out)
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator)
+     (x number) (y number) &key ((out null) nil))
+    bit
+  (declare (ignore out))
+  (let ((cl-name (cl-name name)))
+    (if (funcall cl-name x y)
+        1
+        0)))
 
 
-     
-     ;; double-float - 4 polymorphs
+;; list - 3x2 polymorphs: we do need the two variants
+;;   because below, the OUT is initialized in the lambda-list itself
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x list) (y list) &key ((out array)))
+    (values array &optional)
+  (two-arg-fn/non-broadcast name (asarray x) (asarray y) :out out))
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x number) (y list) &key ((out array)))
+    (values array &optional)
+  (two-arg-fn/non-broadcast name x (asarray y) :out out))
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x list) (y number) &key ((out array)))
+    (values array &optional)
+  (two-arg-fn/non-broadcast name (asarray x) y :out out))
 
-     (defpolymorph ,name ((,first-arg (array double-float)) (,second-arg number)
-                          &key ((out (array ,double-float-return-type))
-                                (zeros (narray-dimensions ,first-arg)
-                                       :type ',double-float-return-type)))
-         (array ,double-float-return-type)
-       ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (cffi:with-foreign-pointer (ptr-y 8)
-         (setf (cffi:mem-ref ptr-y :double) (coerce ,second-arg 'double-float))
-         (ptr-iterate-but-inner n ((ptr-x 8                                 ix ,first-arg)
-                                   (ptr-o ,double-float-return-element-size io out))
-                                (,double-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y 0
-                                                      ptr-o io)))
-       out)
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x list) (y list) &key ((out null)))
+    (values array &optional)
+  (declare (ignore out))
+  (two-arg-fn/non-broadcast name (asarray x) (asarray y)))
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x number) (y list) &key ((out null)))
+    (values array &optional)
+  (declare (ignore out))
+  (two-arg-fn/non-broadcast name x (asarray y)))
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x list) (y number) &key ((out null)))
+    (values array &optional)
+  (declare (ignore out))
+  (two-arg-fn/non-broadcast name (asarray x) y))
 
-     (defpolymorph (,name :inline t)
-         ((,first-arg number) (,second-arg (array double-float))
-          &key ((out (array ,double-float-return-type))
-                (zeros (narray-dimensions ,second-arg)
-                       :type ',double-float-return-type)))
-         (array ,double-float-return-type)
-       (,name ,second-arg ,first-arg :out out)
-       out)
 
-     (defpolymorph ,name ((,first-arg (array double-float)) (,second-arg (array double-float))
-                          &key ((out (array ,double-float-return-type))
-                                (zeros (narray-dimensions ,first-arg)
-                                       :type ',double-float-return-type)))
-         (array ,double-float-return-type)
-       ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (policy-cond:with-expectations (= safety 0)
-           ((assertion (equalp (narray-dimensions ,first-arg)
-                               (narray-dimensions ,second-arg))))
-         (ptr-iterate-but-inner n ((ptr-x 8                                 ix ,first-arg)
-                                   (ptr-y 8                                 iy ,second-arg)
-                                   (ptr-o ,double-float-return-element-size io out))
-                                (,double-float-c-name n
-                                                      ptr-x ix
-                                                      ptr-y iy
-                                                      ptr-o io)))
-       out)
 
-     (defpolymorph ,name ((,first-arg (simple-array double-float))
-                          (,second-arg (simple-array double-float))
-                          &key ((out (simple-array ,double-float-return-type))
-                                (zeros (narray-dimensions ,first-arg)
-                                       :type ',double-float-return-type)))
-         (simple-array ,double-float-return-type)
-       ;; TODO: Handle cases reducible to exp2, exp and exp10
-       (policy-cond:with-expectations (= safety 0)
-           ((assertion (equalp (narray-dimensions ,first-arg)
-                               (narray-dimensions ,second-arg))))
-         (let ((ptr-x (ptr ,first-arg))
-               (ptr-y (ptr ,second-arg))
-               (ptr-o (ptr out))
-               (n     (array-total-size ,first-arg)))
-           (,double-float-c-name n
-                                 ptr-x 1
-                                 ptr-y 1
-                                 ptr-o 1)))
-       out)))
+;; single-float - 2+2+1+2 polymorphs
 
-(macrolet ((def (name cl-name (first-arg second-arg)
-                 (single-float-c-name single-float-return-type single-float-error
-                  &optional (single-float-return-element-size 4)
-                  (sf-min 0.0f0) (sf-max 1.0f0))
-                 (double-float-c-name double-float-return-type double-float-error
-                  &optional (double-float-return-element-size 8)
-                  (df-min 0.0d0) (df-max 1.0d0)))
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator) (x (array single-float)) (y number)
+     &key ((out (array single-float))
+           (zeros (narray-dimensions x) :type 'single-float)))
+    (array single-float)
+  (cffi:with-foreign-pointer (ptr-y 4)
+    (setf (cffi:mem-ref ptr-y :float) (coerce y 'single-float))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 4 ix x)
+                                (ptr-o 4 io out))
+        (funcall single-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y 0
+                 ptr-o io))))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator) (x (array single-float)) (y number)
+     &key ((out (array (unsigned-byte 8)))
+           (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
+    (array (unsigned-byte 8))
+  (cffi:with-foreign-pointer (ptr-y 4)
+    (setf (cffi:mem-ref ptr-y :float) (coerce y 'single-float))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 4 ix x)
+                                (ptr-o 1 io out))
+        (funcall single-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y 0
+                 ptr-o io))))
+  out)
+
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x number) (y (array single-float))
+     &key ((out (array single-float))
+           (zeros (narray-dimensions y) :type 'single-float)))
+    (array single-float)
+  (two-arg-fn/non-broadcast name y x :out out)
+  out)
+
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator) (x (array single-float)) (y (array single-float))
+     &key ((out (array single-float))
+           (zeros (narray-dimensions x) :type 'single-float)))
+    (array single-float)
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 4 ix x)
+                                (ptr-y 4 iy y)
+                                (ptr-o 4 io out))
+        (funcall single-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y iy
+                 ptr-o io))))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator) (x (array single-float)) (y (array single-float))
+     &key ((out (array (unsigned-byte 8)))
+           (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
+    (array (unsigned-byte 8))
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 4 ix x)
+                                (ptr-y 4 iy y)
+                                (ptr-o 1 io out))
+        (funcall single-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y iy
+                 ptr-o io))))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator) (x (simple-array single-float))
+     (y (simple-array single-float))
+     &key ((out (simple-array single-float))
+           (zeros (narray-dimensions x)
+                  :type 'single-float)))
+    (simple-array single-float)
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((ptr-x (ptr x))
+          (ptr-y (ptr y))
+          (ptr-o (ptr out))
+          (n     (array-total-size x))
+          (single-float-c-name (single-float-c-name name)))
+      (funcall single-float-c-name
+               n
+               ptr-x 1
+               ptr-y 1
+               ptr-o 1)))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator) (x (simple-array single-float))
+     (y (simple-array single-float))
+     &key ((out (simple-array (unsigned-byte 8)))
+           (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
+    (simple-array (unsigned-byte 8))
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((ptr-x (ptr x))
+          (ptr-y (ptr y))
+          (ptr-o (ptr out))
+          (n     (array-total-size x))
+          (single-float-c-name (single-float-c-name name)))
+      (funcall single-float-c-name
+               n
+               ptr-x 1
+               ptr-y 1
+               ptr-o 1)))
+  out)
+
+
+
+;;; double-float - 2+1+2+2 polymorphs
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator) (x (array double-float)) (y number)
+     &key ((out (array double-float))
+           (zeros (narray-dimensions x) :type 'double-float)))
+    (array double-float)
+  (cffi:with-foreign-pointer (ptr-y 4)
+    (setf (cffi:mem-ref ptr-y :double) (coerce y 'double-float))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 8 ix x)
+                                (ptr-o 8 io out))
+        (funcall double-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y 0
+                 ptr-o io))))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator) (x (array double-float)) (y number)
+     &key ((out (array (unsigned-byte 8)))
+           (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
+    (array (unsigned-byte 8))
+  (cffi:with-foreign-pointer (ptr-y 4)
+    (setf (cffi:mem-ref ptr-y :double) (coerce y 'double-float))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 8 ix x)
+                                (ptr-o 1 io out))
+        (funcall double-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y 0
+                 ptr-o io))))
+  out)
+
+(defpolymorph (two-arg-fn/non-broadcast :inline t)
+    ((name symbol) (x number) (y (array double-float))
+     &key ((out (array double-float))
+           (zeros (narray-dimensions y)
+                  :type 'double-float)))
+    (array double-float)
+  (two-arg-fn/non-broadcast name y x :out out)
+  out)
+
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator) (x (array double-float)) (y (array double-float))
+     &key ((out (array double-float))
+           (zeros (narray-dimensions x) :type 'double-float)))
+    (array double-float)
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 8 ix x)
+                                (ptr-y 8 iy y)
+                                (ptr-o 8 io out))
+        (funcall double-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y iy
+                 ptr-o io))))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator) (x (array double-float)) (y (array double-float))
+     &key ((out (array (unsigned-byte 8)))
+           (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
+    (array (unsigned-byte 8))
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-x 8 ix x)
+                                (ptr-y 8 iy y)
+                                (ptr-o 1 io out))
+        (funcall double-float-c-name
+                 n
+                 ptr-x ix
+                 ptr-y iy
+                 ptr-o io))))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name non-comparison-operator) (x (simple-array double-float))
+     (y (simple-array double-float))
+     &key ((out (simple-array double-float))
+           (zeros (narray-dimensions x) :type 'double-float)))
+    (simple-array double-float)
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((ptr-x (ptr x))
+          (ptr-y (ptr y))
+          (ptr-o (ptr out))
+          (n     (array-total-size x))
+          (double-float-c-name (double-float-c-name name)))
+      (funcall double-float-c-name
+               n
+               ptr-x 1
+               ptr-y 1
+               ptr-o 1)))
+  out)
+
+(defpolymorph two-arg-fn/non-broadcast
+    ((name comparison-operator) (x (simple-array double-float))
+     (y (simple-array double-float))
+     &key ((out (simple-array (unsigned-byte 8)))
+           (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
+    (simple-array (unsigned-byte 8))
+  (policy-cond:with-expectations (= safety 0)
+      ((assertion (equalp (narray-dimensions x)
+                          (narray-dimensions y))))
+    (let ((ptr-x (ptr x))
+          (ptr-y (ptr y))
+          (ptr-o (ptr out))
+          (n     (array-total-size x))
+          (double-float-c-name (double-float-c-name name)))
+      (funcall double-float-c-name
+               n
+               ptr-x 1
+               ptr-y 1
+               ptr-o 1)))
+  out)
+
+
+;;; Actual definitions
+
+
+(macrolet ((def (name
+                 (single-float-return-type single-float-error
+                  &optional (sf-min 0.0f0) (sf-max 1.0f0))
+                 (double-float-return-type double-float-error 
+                  &optional (df-min 0.0d0) (df-max 1.0d0)))
              (eval `(define-polymorphic-function ,name (&rest args)
                       :overwrite t))
              `(progn
                 (define-polymorphic-function ,name (&rest args))
-                (define-two-arg-functions/non-broadcast ,name ,cl-name (,first-arg ,second-arg)
-                    (,single-float-c-name ,single-float-return-type
-                     ,single-float-return-element-size)
-                    (,double-float-c-name ,double-float-return-type
-                     ,double-float-return-element-size))
-                ;; If someone is worried about the compilation time; then know that that comes
-                ;; from this def-test form :/
+                (defpolymorph ,name (x y &key ((out null))) t
+                  (declare (ignore out))
+                  (two-arg-fn/non-broadcast ',name x y))
+                (defpolymorph ,name (x y &key ((out (not null)))) t
+                  (two-arg-fn/non-broadcast ',name x y :out out))
                 (define-numericals-two-arg-test ,name array
                     (,single-float-error ,sf-min ,sf-max ,single-float-return-type)
                     (,double-float-error ,df-min ,df-max ,double-float-return-type)))))
 
-  (def dn:two-arg-+ cl:+ (x y) (bmas:sadd single-float 1f-7) (bmas:dadd double-float 1d-15))
-  (def dn:two-arg-- cl:- (x y) (bmas:ssub single-float 1f-7) (bmas:dsub double-float 1d-15))
-  (def dn:two-arg-* cl:* (x y) (bmas:smul single-float 1f-7) (bmas:dmul double-float 1d-15))
-  (def dn:two-arg-/ cl:/ (x y) (bmas:sdiv single-float 1f-7) (bmas:ddiv double-float 1d-15))
+  (def dn:two-arg-+ (single-float 1f-7) (double-float 1d-15))
+  (def dn:two-arg-- (single-float 1f-7) (double-float 1d-15))
+  (def dn:two-arg-* (single-float 1f-7) (double-float 1d-15))
+  (def dn:two-arg-/ (single-float 1f-7) (double-float 1d-15))
 
-  (def dn:two-arg-< cl:< (x y)
-    (bmas:slt (unsigned-byte 8) 0 1)
-    (bmas:dlt (unsigned-byte 8) 0 1))
-  (def dn:two-arg-<= cl:<= (x y)
-    (bmas:sle (unsigned-byte 8) 0 1)
-    (bmas:dle (unsigned-byte 8) 0 1))
-  (def dn:two-arg-= cl:= (x y)
-    (bmas:seq (unsigned-byte 8) 0 1)
-    (bmas:deq (unsigned-byte 8) 0 1))
-  (def dn:two-arg-/= cl:/= (x y)
-    (bmas:sneq (unsigned-byte 8) 0 1)
-    (bmas:dneq (unsigned-byte 8) 0 1))
-  (def dn:two-arg->= cl:>= (x y)
-    (bmas:sge (unsigned-byte 8) 0 1)
-    (bmas:dge (unsigned-byte 8) 0 1))
-  (def dn:two-arg-> cl:> (x y)
-    (bmas:sgt (unsigned-byte 8) 0 1)
-    (bmas:dgt (unsigned-byte 8) 0 1)))
-
-
+  (def dn:two-arg-<  ((unsigned-byte 8) 0) ((unsigned-byte 8) 0))
+  (def dn:two-arg-<= ((unsigned-byte 8) 0) ((unsigned-byte 8) 0))
+  (def dn:two-arg-=  ((unsigned-byte 8) 0) ((unsigned-byte 8) 0))
+  (def dn:two-arg-/= ((unsigned-byte 8) 0) ((unsigned-byte 8) 0))
+  (def dn:two-arg->= ((unsigned-byte 8) 0) ((unsigned-byte 8) 0))
+  (def dn:two-arg->  ((unsigned-byte 8) 0) ((unsigned-byte 8) 0)))

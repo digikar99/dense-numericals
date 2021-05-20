@@ -26,20 +26,29 @@
     (terpri s)
     (loop :for fun-report :in (reverse (report-fun-reports report))
           :do (with-slots (name array-sizes lisp numpy torch) fun-report
-                (ascii-table:display
-                 (let ((table (ascii-table:make-table (cons "Library"
-                                                            (mapcar #'write-to-string
-                                                                    array-sizes))
-                                                      :header (string name))))
-                   (ascii-table:add-row table
-                                        (cons 'numpy
-                                              (mapcar #'/ numpy lisp)))
-                   (when torch
-		     (ascii-table:add-row table
-                                        (cons 'torch
-                                              (mapcar #'/ torch lisp))))
-                   table)
-                 s)))))
+                (let* ((num-cols (apply #'min (mapcar #'length
+                                                      (list array-sizes
+                                                            lisp
+                                                            numpy
+                                                            torch))))
+                       (array-sizes (subseq array-sizes 0 num-cols))
+                       (lisp  (subseq lisp 0 num-cols))
+                       (numpy (subseq numpy 0 num-cols))
+                       (torch (subseq torch 0 num-cols)))
+                  (ascii-table:display
+                   (let ((table (ascii-table:make-table (cons "Library"
+                                                              (mapcar #'write-to-string
+                                                                      array-sizes))
+                                                        :header (string name))))
+                     (ascii-table:add-row table
+                                          (cons 'numpy
+                                                (mapcar #'/ numpy lisp)))
+                     (when torch
+		               (ascii-table:add-row table
+                                            (cons 'torch
+                                                  (mapcar #'/ torch lisp))))
+                     table)
+                   s))))))
 
 (defun numpy-element-type (lisp-element-type)
   (ecase lisp-element-type
@@ -102,5 +111,6 @@
              ;;             '(t.atan2))
              (two-arg-fn '(dn:expt)
                          '(np.power)
-                         '( t.pow))))
+                         '( t.pow))
+             ))
       (return-from benchmark (values-list reports)))))

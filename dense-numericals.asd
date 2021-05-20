@@ -22,7 +22,9 @@
                (:file "ptr-iterate-but-inner" :depends-on ("package" "utils"))
                (:file "lparallel"             :depends-on ("ptr-iterate-but-inner"))
                (:file "test"                  :depends-on ("package"))
+               (:file "translations"          :depends-on ("package"))
                (:file "one-arg-fn"            :depends-on ("utils"
+                                                           "translations"
                                                            "test"
                                                            "lparallel"
                                                            "ptr-iterate-but-inner"))
@@ -31,6 +33,7 @@
                                                            "lparallel"
                                                            "ptr-iterate-but-inner"))
                (:file "two-arg-fn-non-broadcast" :depends-on ("utils"
+                                                              "translations"
                                                               "test"
                                                               "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
