@@ -12,7 +12,7 @@
                "fiveam"
                "lparallel"
                "policy-cond"
-               "adhoc-polymorphic-functions"
+               "polymorphic-functions"
                "dense-arrays+static-vectors"
                "trivial-coerce"
                "trivial-package-local-nicknames")
@@ -42,7 +42,8 @@
                (:file "n-arg-fn-compiler-macros" :depends-on ("n-arg-fn"
                                                               "two-arg-fn-non-broadcast"))
                (:file "n-arg-fn-tests"        :depends-on ("n-arg-fn-compiler-macros"))
-               (:file "blas"                  :depends-on ("package"))
+               (:file "blas"                  :depends-on ("package"
+                                                           "ptr-iterate-but-inner"))
                (:file "concatenate"           :depends-on ("blas"))
                (:file "sum"                   :depends-on ("blas"
                                                            "two-arg-fn"))

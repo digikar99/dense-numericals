@@ -5,12 +5,9 @@
 ;; Basic Concept:
 ;; (c:dn-ssin (array-total-size x) (ptr x) 1 (ptr out) 1)
 
-(defparameter dn:*multithreaded-threshold* 80000)
-(declaim (type fixnum dn:*multithreaded-threshold*))
-
 ;;; TODO: Use ARRAY or STATIC-ARRAY
 
-(define-polymorphic-function one-arg-fn (name in &key out) :overwrite t)
+(define-polymorphic-function one-arg-fn (name x &key out) :overwrite t)
 
 (defpolymorph (one-arg-fn :inline t)
     ((name symbol) (x (array single-float)) &key ((out (array single-float))
@@ -47,10 +44,14 @@
     (let ((single-float-c-name (single-float-c-name name)))
       (with-thresholded-multithreading (array-total-size out)
           (:simple x out)
-        (funcall single-float-c-name
-                 (array-total-size out)
-                 (ptr x 4) 1
-                 (ptr out 4) 1))))
+        (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                        (ptr-o (array-storage out)))
+          (cffi:incf-pointer ptr-x (* 4 (array-total-offset x)))
+          (cffi:incf-pointer ptr-o (* 4 (array-total-offset out)))
+          (funcall single-float-c-name
+                   (array-total-size out)
+                   ptr-x 1
+                   ptr-o 1)))))
   out)
 
 (defpolymorph (one-arg-fn :inline t)
@@ -88,10 +89,14 @@
     (let ((double-float-c-name (double-float-c-name name)))
       (with-thresholded-multithreading (array-total-size out)
           (:simple x out)
-        (funcall double-float-c-name
-                 (array-total-size out)
-                 (ptr x 8) 1
-                 (ptr out 8) 1))))
+        (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                        (ptr-o (array-storage out)))
+          (cffi:incf-pointer ptr-x (* 8 (array-total-offset x)))
+          (cffi:incf-pointer ptr-o (* 8 (array-total-offset out)))
+          (funcall double-float-c-name
+                   (array-total-size out)
+                   ptr-x 1
+                   ptr-o 1)))))
   out)
 
 
@@ -112,15 +117,6 @@
     (values array &optional)
   (declare (ignorable out))
   (one-arg-fn name (asarray x (array-element-type out)) :out out))
-
-;; arbitrary arrays
-(defpolymorph (one-arg-fn :inline t) ((name symbol) (x array) &key ((out array))) array
-  ;; FIXME: We are assuming OUT is either single-float or double-float
-  (if (type= (array-element-type x)
-             (array-element-type out))
-      (one-arg-fn name x :out out)
-      (one-arg-fn name (dn:copy x :out out) :out out))
-  out)
 
 
 (macrolet ((def (name

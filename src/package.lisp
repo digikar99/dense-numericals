@@ -74,7 +74,7 @@
 
 (uiop:define-package :dense-numericals.impl
   (:mix :dense-arrays-plus-lite :cl :alexandria :iterate)
-  (:import-from :adhoc-polymorphic-functions
+  (:import-from :polymorphic-functions
                 :define-polymorphic-function
                 :defpolymorph
                 :env

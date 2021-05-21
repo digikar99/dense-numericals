@@ -1,5 +1,8 @@
 (in-package :dense-numericals.impl)
 
+(defparameter dn:*multithreaded-threshold* 80000)
+(declaim (type fixnum dn:*multithreaded-threshold*))
+
 (defmacro with-thresholded-multithreading (threshold-measure (&rest vars) &body body)
   (let* ((simple-p (eq :simple (first vars)))
          (vars     (if simple-p

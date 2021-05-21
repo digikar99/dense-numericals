@@ -177,16 +177,15 @@
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
-    (let ((ptr-x (ptr x))
-          (ptr-y (ptr y))
-          (ptr-o (ptr out))
-          (n     (array-total-size x))
-          (single-float-c-name (single-float-c-name name)))
-      (funcall single-float-c-name
-               n
-               ptr-x 1
-               ptr-y 1
-               ptr-o 1)))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                      (ptr-y (array-storage y))
+                                      (ptr-o (array-storage out)))
+        (funcall single-float-c-name
+                 (array-total-size (the array out))
+                 ptr-x 1
+                 ptr-y 1
+                 ptr-o 1))))
   out)
 
 (defpolymorph two-arg-fn/non-broadcast
@@ -199,16 +198,15 @@
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
-    (let ((ptr-x (ptr x))
-          (ptr-y (ptr y))
-          (ptr-o (ptr out))
-          (n     (array-total-size x))
-          (single-float-c-name (single-float-c-name name)))
-      (funcall single-float-c-name
-               n
-               ptr-x 1
-               ptr-y 1
-               ptr-o 1)))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                      (ptr-y (array-storage y))
+                                      (ptr-o (array-storage out)))
+        (funcall single-float-c-name
+                 (array-total-size (the array out))
+                 ptr-x 1
+                 ptr-y 1
+                 ptr-o 1))))
   out)
 
 
@@ -320,16 +318,15 @@
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
-    (let ((ptr-x (ptr x))
-          (ptr-y (ptr y))
-          (ptr-o (ptr out))
-          (n     (array-total-size x))
-          (double-float-c-name (double-float-c-name name)))
-      (funcall double-float-c-name
-               n
-               ptr-x 1
-               ptr-y 1
-               ptr-o 1)))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                      (ptr-y (array-storage y))
+                                      (ptr-o (array-storage out)))
+        (funcall double-float-c-name
+                 (array-total-size (the array out))
+                 ptr-x 1
+                 ptr-y 1
+                 ptr-o 1))))
   out)
 
 (defpolymorph two-arg-fn/non-broadcast
@@ -342,16 +339,15 @@
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
-    (let ((ptr-x (ptr x))
-          (ptr-y (ptr y))
-          (ptr-o (ptr out))
-          (n     (array-total-size x))
-          (double-float-c-name (double-float-c-name name)))
-      (funcall double-float-c-name
-               n
-               ptr-x 1
-               ptr-y 1
-               ptr-o 1)))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                      (ptr-y (array-storage y))
+                                      (ptr-o (array-storage out)))
+        (funcall double-float-c-name
+                 (array-total-size (the array out))
+                 ptr-x 1
+                 ptr-y 1
+                 ptr-o 1))))
   out)
 
 

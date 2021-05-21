@@ -36,9 +36,10 @@
                   (cffi:with-foreign-pointer (ones ,type-size)
                     (setf (cffi:mem-aref ones ,ctype)
                           (coerce 1 ',type))
-                    (,c-fn (array-total-size x)
-                           (ptr x) 1
-                           ones 0)))
+                    (cffi:with-pointer-to-vector-data (ptr-x (array-storage x))
+                      (,c-fn (array-total-size x)
+                             ptr-x 1
+                             ones 0))))
 
                 (defpolymorph dn:sum ((x (array ,type))
                                       &key ((axes integer)) ((out (array ,type))))

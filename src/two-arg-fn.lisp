@@ -119,11 +119,17 @@
         (progn
           (with-thresholded-multithreading (array-total-size (the array out))
               (:simple x y out)
-            (funcall single-float-c-name
-                     (array-total-size (the array out))
-                     (ptr x 4) 1
-                     (ptr y 4) 1
-                     (ptr out 4) 1))
+            (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                            (ptr-y (array-storage y))
+                                            (ptr-o (array-storage out)))
+              (cffi:incf-pointer ptr-x (* 4 (array-total-offset x)))
+              (cffi:incf-pointer ptr-y (* 4 (array-total-offset y)))
+              (cffi:incf-pointer ptr-o (* 4 (array-total-offset out)))
+              (funcall single-float-c-name
+                       (array-total-size (the array out))
+                       ptr-x 1
+                       ptr-x 1
+                       ptr-o 1)))
           out)
         (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
             (broadcast-compatible-p x y)
@@ -220,11 +226,17 @@
         (progn
           (with-thresholded-multithreading (array-total-size (the array out))
               (:simple x y out)
-            (funcall double-float-c-name
-                     (array-total-size (the array out))
-                     (ptr x 8) 1
-                     (ptr y 8) 1
-                     (ptr out 8) 1))
+            (with-pointers-to-vectors-data ((ptr-x (array-storage x))
+                                            (ptr-y (array-storage y))
+                                            (ptr-o (array-storage out)))
+              (cffi:incf-pointer ptr-x (* 8 (array-total-offset x)))
+              (cffi:incf-pointer ptr-y (* 8 (array-total-offset y)))
+              (cffi:incf-pointer ptr-o (* 8 (array-total-offset out)))
+              (funcall double-float-c-name
+                       (array-total-size (the array out))
+                       ptr-x 1
+                       ptr-y 1
+                       ptr-o 1)))
           out)
         (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
             (broadcast-compatible-p x y)

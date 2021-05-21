@@ -56,18 +56,21 @@
                       ((assertion (matmul-compatible-arrays a b out) (a b out)))
                     ;; We do C^T = (B^T A^T) - since we are unable
                     ;; to obtain the result with cblas:+cblas-row-major+ :/
-                    (let ((m (array-dimension b 1))
-                          (k (array-dimension b 0))
-                          (n (array-dimension a 0)))
-                      (,c-fn cblas:+cblas-col-major+
-                             cblas:+cblas-no-trans+
-                             cblas:+cblas-no-trans+
-                             m n k
-                             (coerce 1 ',element-type)
-                             (ptr b) m
-                             (ptr a) k
-                             (coerce 0 ',element-type)
-                             (ptr out) m))))
+                    (with-pointers-to-vectors-data ((ptr-b (array-storage b))
+                                                    (ptr-a (array-storage a))
+                                                    (ptr-o (array-storage out)))
+                      (let ((m (array-dimension b 1))
+                            (k (array-dimension b 0))
+                            (n (array-dimension a 0)))
+                        (,c-fn cblas:+cblas-col-major+
+                               cblas:+cblas-no-trans+
+                               cblas:+cblas-no-trans+
+                               m n k
+                               (coerce 1 ',element-type)
+                               ptr-b m
+                               ptr-a k
+                               (coerce 0 ',element-type)
+                               ptr-o m)))))
                 out)))
 
   (def single-float cblas:cblas-sgemm)
@@ -126,6 +129,8 @@
     t
   (declare (ignore out))
   ;; TODO: Generalize this to more dimensions
-  (cblas:cblas-sdot (array-total-size a)
-                    (ptr a) 1
-                    (ptr b) 1))
+  (with-pointers-to-vectors-data ((ptr-a (array-storage a))
+                                  (ptr-b (array-storage b)))
+    (cblas:cblas-sdot (array-total-size a)
+                      ptr-a 1
+                      ptr-b 1)))
