@@ -5,7 +5,8 @@
 (defpolymorph two-arg-fn ((name symbol)
                           (x number) (y number) &key ((out null) nil))
     (values number &optional)
-  (declare (ignore out))
+  (declare (ignore out)
+           (ignorable name))
   (let ((cl-name (cl-name name)))
     (funcall cl-name x y)))
 
@@ -49,6 +50,7 @@
      &key ((out (array single-float))
            (zeros (narray-dimensions x) :type 'single-float)))
     (array single-float)
+  (declare (ignorable name))
   (with-thresholded-multithreading (array-total-size x)
       (x out)
     (cffi:with-foreign-pointer (ptr-y 4)
@@ -76,6 +78,7 @@
     ((name symbol) (x (array single-float)) (y (array single-float))
      &key ((out (or null (array single-float)))))
     (array single-float)
+  (declare (ignorable name))
   (unless (and out
                (equalp (narray-dimensions x)
                        (narray-dimensions y)))
@@ -106,39 +109,43 @@
     ((name symbol) (x (simple-array single-float)) (y (simple-array single-float))
      &key ((out (or null (simple-array single-float)))))
     (simple-array single-float)
+  (declare (ignorable name))
   (let ((single-float-c-name (single-float-c-name name)))
     (if (and out
              (equalp (narray-dimensions x)
                      (narray-dimensions y))
              (equalp (narray-dimensions out)
                      (narray-dimensions y)))
-        (with-thresholded-multithreading (array-total-size (the array out))
-            (:simple x y out)
-          (funcall single-float-c-name
-                   (array-total-size (the array out))
-                   (ptr x 4) 1
-                   (ptr y 4) 1
-                   (ptr out 4) 1))
+        (progn
+          (with-thresholded-multithreading (array-total-size (the array out))
+              (:simple x y out)
+            (funcall single-float-c-name
+                     (array-total-size (the array out))
+                     (ptr x 4) 1
+                     (ptr y 4) 1
+                     (ptr out 4) 1))
+          out)
         (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
             (broadcast-compatible-p x y)
           (assert broadcast-compatible-p (x y)
                   'incompatible-broadcast-dimensions
                   :dimensions (mapcar #'narray-dimensions (list x y))
                   :array-likes (list x y))
-          (setq x  (broadcast-array x broadcast-dimensions))
-          (setq y (broadcast-array y broadcast-dimensions))
-          (setq out (or out (zeros broadcast-dimensions :type 'single-float)))
-          (with-thresholded-multithreading (array-total-size (the array out))
-              (x y out)
-            (ptr-iterate-but-inner n ((ptr-x 4 ix x)
-                                      (ptr-y 4 iy y)
-                                      (ptr-o 4 io out))
-              (funcall single-float-c-name
-                       n
-                       ptr-x ix
-                       ptr-y iy
-                       ptr-o io))))))
-  out)
+          (let ((x (broadcast-array x broadcast-dimensions))
+                (y (broadcast-array y broadcast-dimensions))
+                (out (or out (zeros broadcast-dimensions :type 'single-float))))
+            (declare (type (array single-float) x y out))
+            (with-thresholded-multithreading (array-total-size (the array out))
+                (x y out)
+              (ptr-iterate-but-inner n ((ptr-x 4 ix x)
+                                        (ptr-y 4 iy y)
+                                        (ptr-o 4 io out))
+                (funcall single-float-c-name
+                         n
+                         ptr-x ix
+                         ptr-y iy
+                         ptr-o io)))
+            out)))))
 
 ;;; double-float - 4 polymorphs
 
@@ -210,33 +217,36 @@
                      (narray-dimensions y))
              (equalp (narray-dimensions out)
                      (narray-dimensions y)))
-        (with-thresholded-multithreading (array-total-size (the array out))
-            (:simple x y out)
-          (funcall double-float-c-name
-                   (array-total-size (the array out))
-                   (ptr x 8) 1
-                   (ptr y 8) 1
-                   (ptr out 8) 1))
+        (progn
+          (with-thresholded-multithreading (array-total-size (the array out))
+              (:simple x y out)
+            (funcall double-float-c-name
+                     (array-total-size (the array out))
+                     (ptr x 8) 1
+                     (ptr y 8) 1
+                     (ptr out 8) 1))
+          out)
         (multiple-value-bind (broadcast-compatible-p broadcast-dimensions)
             (broadcast-compatible-p x y)
           (assert broadcast-compatible-p (x y)
                   'incompatible-broadcast-dimensions
                   :dimensions (mapcar #'narray-dimensions (list x y))
                   :array-likes (list x y))
-          (setq x  (broadcast-array x broadcast-dimensions))
-          (setq y (broadcast-array y broadcast-dimensions))
-          (setq out (or out (zeros broadcast-dimensions :type 'double-float)))
-          (with-thresholded-multithreading (array-total-size (the array out))
-              (x y out)
-            (ptr-iterate-but-inner n ((ptr-x 8 ix x)
-                                      (ptr-y 8 iy y)
-                                      (ptr-o 8 io out))
-              (funcall double-float-c-name
-                       n
-                       ptr-x ix
-                       ptr-y iy
-                       ptr-o io))))))
-  out)
+          (let ((x (broadcast-array x broadcast-dimensions))
+                (y (broadcast-array y broadcast-dimensions))
+                (out (or out (zeros broadcast-dimensions :type 'double-float))))
+            (declare (type (array double-float) x y out))
+            (with-thresholded-multithreading (array-total-size (the array out))
+                (x y out)
+              (ptr-iterate-but-inner n ((ptr-x 8 ix x)
+                                        (ptr-y 8 iy y)
+                                        (ptr-o 8 io out))
+                (funcall double-float-c-name
+                         n
+                         ptr-x ix
+                         ptr-y iy
+                         ptr-o io)))
+            out)))))
 
 
 (define-polymorphic-function dn:expt (base power &key out) :overwrite t)

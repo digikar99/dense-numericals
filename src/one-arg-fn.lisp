@@ -94,21 +94,33 @@
                  (ptr out 8) 1))))
   out)
 
+
+;; pure number
 (defpolymorph (one-arg-fn :inline t) ((name symbol) (x number) &key ((out null)))
     (values number &optional)
   (declare (ignorable out name))
   (funcall (cl-name name) x))
 
-(defpolymorph (one-arg-fn :inline t) ((name symbol) (x list) &key ((out null) nil outp))
+;; lists - 2 polymorphs
+(defpolymorph (one-arg-fn :inline t) ((name symbol) (x list) &key ((out null)))
     (values array &optional)
-  (declare (ignorable out outp))
-  (one-arg-fn name (asarray x)))
+  (declare (ignorable out))
+  (let ((array (asarray x)))
+    (one-arg-fn name array :out array)))
 
-;; (defpolymorph (,name :inline t) ((x array) &key ((out array))) array
-;;   (if (type= (array-element-type x)
-;;              (array-element-type out))
-;;       (,name x :out out)
-;;       (,name ())))
+(defpolymorph (one-arg-fn :inline t) ((name symbol) (x list) &key ((out array)))
+    (values array &optional)
+  (declare (ignorable out))
+  (one-arg-fn name (asarray x (array-element-type out)) :out out))
+
+;; arbitrary arrays
+(defpolymorph (one-arg-fn :inline t) ((name symbol) (x array) &key ((out array))) array
+  ;; FIXME: We are assuming OUT is either single-float or double-float
+  (if (type= (array-element-type x)
+             (array-element-type out))
+      (one-arg-fn name x :out out)
+      (one-arg-fn name (dn:copy x :out out) :out out))
+  out)
 
 
 (macrolet ((def (name

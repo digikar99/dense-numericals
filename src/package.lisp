@@ -13,6 +13,7 @@
                 #:coerce)
   (:reexport :dense-numericals-lite)
   (:export #:*multithreaded-threshold*
+           #:+optimized-types+
            #:sin
            #:cos
            #:tan

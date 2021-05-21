@@ -19,7 +19,8 @@
     ((name non-comparison-operator)
      (x number) (y number) &key ((out null) nil))
     (values number &optional)
-  (declare (ignore out))
+  (declare (ignore out)
+           (ignorable name))
   (let ((cl-name (cl-name name)))
     (funcall cl-name x y)))
 
@@ -27,11 +28,11 @@
     ((name comparison-operator)
      (x number) (y number) &key ((out null) nil))
     bit
-  (declare (ignore out))
-  (let ((cl-name (cl-name name)))
-    (if (funcall cl-name x y)
-        1
-        0)))
+  (declare (ignore out)
+           (ignorable name))
+  (if (funcall (cl-name name) x y)
+      1
+      0))
 
 
 ;; list - 3x2 polymorphs: we do need the two variants
@@ -74,6 +75,7 @@
      &key ((out (array single-float))
            (zeros (narray-dimensions x) :type 'single-float)))
     (array single-float)
+  (declare (ignorable name))
   (cffi:with-foreign-pointer (ptr-y 4)
     (setf (cffi:mem-ref ptr-y :float) (coerce y 'single-float))
     (let ((single-float-c-name (single-float-c-name name)))
@@ -91,6 +93,7 @@
      &key ((out (array (unsigned-byte 8)))
            (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
     (array (unsigned-byte 8))
+  (declare (ignorable name))
   (cffi:with-foreign-pointer (ptr-y 4)
     (setf (cffi:mem-ref ptr-y :float) (coerce y 'single-float))
     (let ((single-float-c-name (single-float-c-name name)))
@@ -106,9 +109,20 @@
 (defpolymorph (two-arg-fn/non-broadcast :inline t)
     ((name symbol) (x number) (y (array single-float))
      &key ((out (array single-float))
-           (zeros (narray-dimensions y) :type 'single-float)))
+           (zeros (narray-dimensions y)
+                  :type 'single-float)))
     (array single-float)
-  (two-arg-fn/non-broadcast name y x :out out)
+  (declare (ignorable name))
+  (cffi:with-foreign-pointer (ptr-x 4)
+    (setf (cffi:mem-ref ptr-x :float) (coerce x 'single-float))
+    (let ((single-float-c-name (single-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-y 4 iy y)
+                                (ptr-o 1 io out))
+        (funcall single-float-c-name
+                 n
+                 ptr-x 0
+                 ptr-y iy
+                 ptr-o io))))
   out)
 
 
@@ -117,6 +131,7 @@
      &key ((out (array single-float))
            (zeros (narray-dimensions x) :type 'single-float)))
     (array single-float)
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -136,6 +151,7 @@
      &key ((out (array (unsigned-byte 8)))
            (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
     (array (unsigned-byte 8))
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -157,6 +173,7 @@
            (zeros (narray-dimensions x)
                   :type 'single-float)))
     (simple-array single-float)
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -178,6 +195,7 @@
      &key ((out (simple-array (unsigned-byte 8)))
            (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
     (simple-array (unsigned-byte 8))
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -202,6 +220,7 @@
      &key ((out (array double-float))
            (zeros (narray-dimensions x) :type 'double-float)))
     (array double-float)
+  (declare (ignorable name))
   (cffi:with-foreign-pointer (ptr-y 4)
     (setf (cffi:mem-ref ptr-y :double) (coerce y 'double-float))
     (let ((double-float-c-name (double-float-c-name name)))
@@ -219,7 +238,8 @@
      &key ((out (array (unsigned-byte 8)))
            (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
     (array (unsigned-byte 8))
-  (cffi:with-foreign-pointer (ptr-y 4)
+  (declare (ignorable name))
+  (cffi:with-foreign-pointer (ptr-y 8)
     (setf (cffi:mem-ref ptr-y :double) (coerce y 'double-float))
     (let ((double-float-c-name (double-float-c-name name)))
       (ptr-iterate-but-inner n ((ptr-x 8 ix x)
@@ -233,11 +253,20 @@
 
 (defpolymorph (two-arg-fn/non-broadcast :inline t)
     ((name symbol) (x number) (y (array double-float))
-     &key ((out (array double-float))
-           (zeros (narray-dimensions y)
-                  :type 'double-float)))
+     &key ((out (array (unsigned-byte 8)))
+           (zeros (narray-dimensions y) :type 'double-float)))
     (array double-float)
-  (two-arg-fn/non-broadcast name y x :out out)
+  (declare (ignorable name))
+  (cffi:with-foreign-pointer (ptr-x 8)
+    (setf (cffi:mem-ref ptr-x :double) (coerce x 'double-float))
+    (let ((double-float-c-name (double-float-c-name name)))
+      (ptr-iterate-but-inner n ((ptr-y 8 iy y)
+                                (ptr-o 1 io out))
+        (funcall double-float-c-name
+                 n
+                 ptr-x 0
+                 ptr-y iy
+                 ptr-o io))))
   out)
 
 
@@ -246,6 +275,7 @@
      &key ((out (array double-float))
            (zeros (narray-dimensions x) :type 'double-float)))
     (array double-float)
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -265,6 +295,7 @@
      &key ((out (array (unsigned-byte 8)))
            (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
     (array (unsigned-byte 8))
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -285,6 +316,7 @@
      &key ((out (simple-array double-float))
            (zeros (narray-dimensions x) :type 'double-float)))
     (simple-array double-float)
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -306,6 +338,7 @@
      &key ((out (simple-array (unsigned-byte 8)))
            (zeros (narray-dimensions x) :type '(unsigned-byte 8))))
     (simple-array (unsigned-byte 8))
+  (declare (ignorable name))
   (policy-cond:with-expectations (= safety 0)
       ((assertion (equalp (narray-dimensions x)
                           (narray-dimensions y))))
@@ -330,10 +363,10 @@
                   &optional (sf-min 0.0f0) (sf-max 1.0f0))
                  (double-float-return-type double-float-error 
                   &optional (df-min 0.0d0) (df-max 1.0d0)))
-             (eval `(define-polymorphic-function ,name (&rest args)
+             (eval `(define-polymorphic-function ,name (x y &key out)
                       :overwrite t))
              `(progn
-                (define-polymorphic-function ,name (&rest args))
+                (define-polymorphic-function ,name (x y &key out))
                 (defpolymorph ,name (x y &key ((out null))) t
                   (declare (ignore out))
                   (two-arg-fn/non-broadcast ',name x y))

@@ -31,6 +31,7 @@
                (:file "two-arg-fn"            :depends-on ("utils"
                                                            "test"
                                                            "lparallel"
+                                                           "translations"
                                                            "ptr-iterate-but-inner"))
                (:file "two-arg-fn-non-broadcast" :depends-on ("utils"
                                                               "translations"
@@ -38,6 +39,9 @@
                                                               "ptr-iterate-but-inner"))
                (:file "n-arg-fn"              :depends-on ("one-arg-fn"
                                                            "two-arg-fn-non-broadcast"))
+               (:file "n-arg-fn-compiler-macros" :depends-on ("n-arg-fn"
+                                                              "two-arg-fn-non-broadcast"))
+               (:file "n-arg-fn-tests"        :depends-on ("n-arg-fn-compiler-macros"))
                (:file "blas"                  :depends-on ("package"))
                (:file "concatenate"           :depends-on ("blas"))
                (:file "sum"                   :depends-on ("blas"

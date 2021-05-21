@@ -10,6 +10,7 @@
               dn:*multithreaded-threshold*)
            (progn
              ,@body)
+           ;; FIXME: Can the multiple BODY here be reduced?
            (progn
              (let* ((worker-count  (lparallel:kernel-worker-count)))
                (declare (type dense-arrays::size worker-count))
