@@ -49,9 +49,10 @@
                (:file "coerce"                :depends-on ("one-arg-fn"))
                (:file "misc"                  :depends-on ("package")))
   :perform (test-op (o c)
-                    (declare (ignore o c))
-                    ;; Or should we use STATIC?
-                    (eval (read-from-string "(LET* ((DENSE-ARRAYS:*DENSE-ARRAY-CLASS*
+              (declare (ignore o c))
+              ;; Or should we use STATIC?
+              (eval (read-from-string "(LET* ((5AM:*ON-ERROR* :DEBUG)
+                                              (DENSE-ARRAYS:*DENSE-ARRAY-CLASS*
                                                 'DENSE-ARRAYS:STANDARD-DENSE-ARRAY))
                                         (5AM:RUN 'DENSE-NUMERICALS.IMPL::ARRAY))"))))
 

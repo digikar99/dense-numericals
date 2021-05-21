@@ -253,7 +253,7 @@
 
 (defpolymorph (two-arg-fn/non-broadcast :inline t)
     ((name symbol) (x number) (y (array double-float))
-     &key ((out (array (unsigned-byte 8)))
+     &key ((out (array double-float))
            (zeros (narray-dimensions y) :type 'double-float)))
     (array double-float)
   (declare (ignorable name))
@@ -261,7 +261,7 @@
     (setf (cffi:mem-ref ptr-x :double) (coerce x 'double-float))
     (let ((double-float-c-name (double-float-c-name name)))
       (ptr-iterate-but-inner n ((ptr-y 8 iy y)
-                                (ptr-o 1 io out))
+                                (ptr-o 8 io out))
         (funcall double-float-c-name
                  n
                  ptr-x 0
