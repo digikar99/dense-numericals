@@ -24,6 +24,7 @@
                                          (,name rand)
                                          :test #'float-close-p))
                                "Simplest case")
+                  #-ccl
                   (5am:is-true (let* ((dn:*multithreaded-threshold* 10000)
                                       (rand (rand 2 dn:*multithreaded-threshold*
                                                   :type ',type :min ,min :max ,max)))
@@ -31,6 +32,7 @@
                                          (,name rand)
                                          :test #'float-close-p))
                                "Simple multithreaded inners")
+                  #-ccl
                   (5am:is-true (let* ((dn:*multithreaded-threshold* 10000)
                                       (rand (rand dn:*multithreaded-threshold* 2
                                                   :type ',type :min ,min :max ,max)))
@@ -61,6 +63,7 @@
                                          (,name rand :out rand)
                                          :test #'float-close-p))
                                "Non-simple arrays 3")
+                  #-ccl
                   (5am:is-true (let* ((dn:*multithreaded-threshold* 1000)
                                       (rand (aref (rand '(1000 100) :type ',type
                                                                     :min ,min :max ,max)
@@ -116,6 +119,7 @@
                                          (,name rand1 rand2)
                                          :test #'close-p))
                                "Simplest case")
+                  #-ccl
                   (5am:is-true (let* ((dn:*multithreaded-threshold* 10000)
                                       (rand1 (rand 2 dn:*multithreaded-threshold*
                                                    :type ',type :min ,min :max ,max))
@@ -127,6 +131,7 @@
                                          (,name rand1 rand2)
                                          :test #'close-p))
                                "Simple Multithreaded insides")
+                  #-ccl
                   (5am:is-true (let* ((dn:*multithreaded-threshold* 10000)
                                       (rand1 (rand dn:*multithreaded-threshold* 2
                                                    :type ',type :min ,min :max ,max))
@@ -164,6 +169,7 @@
                                          (,name rand1 rand2 :out return-array)
                                          :test #'close-p))
                                "Non-simple arrays 2")
+                  #-ccl
                   (5am:is-true (let* ((dn:*multithreaded-threshold* 1000)
                                       (rand1 (aref (rand '(1000 100) :type ',type
                                                                      :min ,min :max ,max)

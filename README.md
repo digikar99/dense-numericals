@@ -27,6 +27,7 @@ Limitations / Future Plans:
 - Recheck and improve CUDA support using [cl-cuda](https://github.com/takagi/cl-cuda)
 - Improve support for `sum` over multiple axes
 - Add more functionality from CBLAS
+- A bug on [CCL](https://github.com/Clozure/ccl/pull/369) wouldn't let adhoc-polymorphic-functions work correctly; in addition multithreading with builtin-cl-arrays as backend leads to segmentation faults; perhaps static-vectors could work.
 
 ### Rationale
 
