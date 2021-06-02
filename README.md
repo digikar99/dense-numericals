@@ -1,5 +1,7 @@
 # dense-numericals - High Performance number crunching over dense-arrays
 
+> This repository now lives as a part of [numericals](https://github.com/digikar99/numericals).
+
 Features / Currently Supported:
 
 - Uses [dense-arrays](https://github.com/digikar99/dense-arrays) as the frontend
