@@ -61,8 +61,8 @@
                                     stride)))
                   out))))
 
-  (def single-float cblas:cblas-sdot 4 :float)
-  (def double-float cblas:cblas-ddot 8 :double))
+  (def single-float cblas:sdot 4 :float)
+  (def double-float cblas:ddot 8 :double))
 
 
 
@@ -107,7 +107,7 @@
 ;;   (declare (ignore axes out))
 ;;   (cffi:with-foreign-pointer (ones 4)
 ;;     (setf (cffi:mem-aref ones :float) 1.0f0)
-;;     (cblas:cblas-sdot (array-total-size x)
+;;     (cblas:sdot (array-total-size x)
 ;;                          (ptr x) 1
 ;;                          ones 0)))
 

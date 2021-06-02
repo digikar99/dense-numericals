@@ -116,7 +116,7 @@
 (defpolymorph (one-arg-fn :inline t) ((name symbol) (x list) &key ((out array)))
     (values array &optional)
   (declare (ignorable out))
-  (one-arg-fn name (asarray x (array-element-type out)) :out out))
+  (one-arg-fn name (asarray x :type (array-element-type out)) :out out))
 
 
 (macrolet ((def (name

@@ -1,12 +1,5 @@
 (in-package :dense-numericals.impl)
 
-(defmacro with-pointers-to-vectors-data (bindings &body body)
-  (if bindings
-      `(cffi:with-pointer-to-vector-data ,(first bindings)
-         (locally (declare (type cffi-sys:foreign-pointer ,(caar bindings)))
-           (with-pointers-to-vectors-data ,(rest bindings) ,@body)))
-      `(progn ,@body)))
-
 (declaim (inline array-total-offset))
 (defun array-total-offset (array)
   (declare (type dense-arrays::dense-array array)

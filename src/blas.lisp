@@ -13,7 +13,7 @@
                           (narray-dimensions out))))
     (ptr-iterate-but-inner n ((ptr-x 4 ix x)
                               (ptr-o 4 iout out))
-      (cblas:cblas-scopy n ptr-x ix ptr-o iout)))
+      (cblas:scopy n ptr-x ix ptr-o iout)))
   out)
 
 (defpolymorph dn:copy
@@ -25,7 +25,7 @@
                           (narray-dimensions out))))
     (ptr-iterate-but-inner n ((ptr-x 8 ix x)
                               (ptr-o 8 iout out))
-      (cblas:cblas-dcopy n ptr-x ix ptr-o iout)))
+      (cblas:dcopy n ptr-x ix ptr-o iout)))
   out)
 
 ;; (let ((a (asarray '((1 2 3))))
@@ -55,16 +55,16 @@
                   (policy-cond:with-expectations (= 0 safety)
                       ((assertion (matmul-compatible-arrays a b out) (a b out)))
                     ;; We do C^T = (B^T A^T) - since we are unable
-                    ;; to obtain the result with cblas:+cblas-row-major+ :/
+                    ;; to obtain the result with cblas:+row-major+ :/
                     (with-pointers-to-vectors-data ((ptr-b (array-storage b))
                                                     (ptr-a (array-storage a))
                                                     (ptr-o (array-storage out)))
                       (let ((m (array-dimension b 1))
                             (k (array-dimension b 0))
                             (n (array-dimension a 0)))
-                        (,c-fn cblas:+cblas-col-major+
-                               cblas:+cblas-no-trans+
-                               cblas:+cblas-no-trans+
+                        (,c-fn cblas:+col-major+
+                               cblas:+no-trans+
+                               cblas:+no-trans+
                                m n k
                                (coerce 1 ',element-type)
                                ptr-b m
@@ -73,8 +73,8 @@
                                ptr-o m)))))
                 out)))
 
-  (def single-float cblas:cblas-sgemm)
-  (def double-float cblas:cblas-dgemm))
+  (def single-float cblas:sgemm)
+  (def double-float cblas:dgemm))
 
 (5am:def-test dn:two-arg-matmul ()
   (loop :for *array-element-type* :in '(single-float double-float)
@@ -118,7 +118,7 @@
   (let ((sum 0.0f0))
     (ptr-iterate-but-inner n ((ptr-a 4 inc-a a)
                               (ptr-b 4 inc-b b))
-      (incf sum (cblas:cblas-sdot n
+      (incf sum (cblas:sdot n
                                   ptr-a inc-a
                                   ptr-b inc-b)))
     sum))
@@ -131,6 +131,6 @@
   ;; TODO: Generalize this to more dimensions
   (with-pointers-to-vectors-data ((ptr-a (array-storage a))
                                   (ptr-b (array-storage b)))
-    (cblas:cblas-sdot (array-total-size a)
+    (cblas:sdot (array-total-size a)
                       ptr-a 1
                       ptr-b 1)))

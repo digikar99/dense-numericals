@@ -28,10 +28,10 @@
 
 (5am:def-test dn:copy ()
   (5am:is (array= (asarray '(1 2 3) 'single-float)
-                  (dn:copy (asarray '(1 2 3) 'single-float)
+                  (dn:copy (asarray '(1 2 3) :type 'single-float)
                            :out (zeros 3 :type 'double-float))))  
   (5am:is (array= (asarray '(1 2 3) 'double-float)
-                  (dn:copy (asarray '(1 2 3) 'double-float)
+                  (dn:copy (asarray '(1 2 3) :type 'double-float)
                            :out (zeros 3 :type 'single-float))))
   
   (let ((rand (aref (rand 1000 1000 :type 'single-float)
